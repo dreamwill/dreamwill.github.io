@@ -2,3 +2,12 @@ baseURL: https://dreamwill.github.io/
 languageCode: en-us
 title: My New Hugo Site
 theme: yinyang
+DefaultContentLanguage: cn
+
+author:
+  name: 许王伟
+  homepage: https://dreamwill.github.io/
+
+params:
+  mainSections:
+    - posts
