@@ -1,6 +1,6 @@
 baseURL: https://dreamwill.github.io/
 languageCode: en-us
-title: My New Hugo Site
+title: 王伟的个人博客
 theme: yinyang
 DefaultContentLanguage: cn
 
@@ -11,3 +11,6 @@ author:
 params:
   mainSections:
     - posts
+  headTitle: "persistence"
+  Description: "我老婆说我是一个执着的人"
+  favicon: "/favicon.ico"
