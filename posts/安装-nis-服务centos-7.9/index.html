@@ -1,0 +1,454 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=generator content="Hugo 0.119.0"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="许王伟"><meta property="og:url" content="https://dreamwill.github.io/posts/%E5%AE%89%E8%A3%85-nis-%E6%9C%8D%E5%8A%A1centos-7.9/"><link rel=canonical href=https://dreamwill.github.io/posts/%E5%AE%89%E8%A3%85-nis-%E6%9C%8D%E5%8A%A1centos-7.9/><link rel=apple-touch-icon href=/images/favicon.ico><link rel=icon href=/images/favicon.ico><link rel=shortcut href=/images/favicon.ico><link rel=alternate type=application/atom+xml href=https://dreamwill.github.io/index.xml title=王伟的个人博客><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/dreamwill.github.io\/"},"articleSection":"posts","name":"安装NIS服务（CentOS 7.9）","headline":"安装NIS服务（CentOS 7.9）","description":"安装目标：\n安装一个 NIS 服务端实例，该实例所在主机 IP 地址为 192.168.2.50，对应主机 nis-master.example.com。 安装一个 NIS 客户端实例，该实例所在主机 IP 地址为 192.168.2.51，对应主机 nis-client.example.com。 使得客户端的用户、用户组、hosts 与服务端的保持同步。 前置条件：\n无。 安装服务端 安装 yum -y install ypserv \/etc\/ypserv.conf配置保持不变 # # ypserv.conf\tIn this file you can set certain options for the NIS server, #\tand you can deny or restrict access to certain maps based #\ton the originating host. # #\tSee ypserv.conf(5) for a description of the syntax. # # Some options for ypserv.","inLanguage":"en-US","author":"许王伟","creator":"许王伟","publisher":"许王伟","accountablePerson":"许王伟","copyrightHolder":"许王伟","copyrightYear":"2023","datePublished":"2023-08-26 00:00:00 \u002b0000 UTC","dateModified":"2023-08-26 00:00:00 \u002b0000 UTC","url":"https:\/\/dreamwill.github.io\/posts\/%E5%AE%89%E8%A3%85-nis-%E6%9C%8D%E5%8A%A1centos-7.9\/","keywords":[]}</script><title>安装NIS服务（CentOS 7.9）</title><meta property="og:title" content="安装NIS服务（CentOS 7.9）"><meta property="og:type" content="article"><meta property="og:description" content="安装目标：
+安装一个 NIS 服务端实例，该实例所在主机 IP 地址为 192.168.2.50，对应主机 nis-master.example.com。 安装一个 NIS 客户端实例，该实例所在主机 IP 地址为 192.168.2.51，对应主机 nis-client.example.com。 使得客户端的用户、用户组、hosts 与服务端的保持同步。 前置条件：
+无。 安装服务端 安装 yum -y install ypserv /etc/ypserv.conf配置保持不变 # # ypserv.conf	In this file you can set certain options for the NIS server, #	and you can deny or restrict access to certain maps based #	on the originating host. # #	See ypserv.conf(5) for a description of the syntax. # # Some options for ypserv."><meta name=description content="安装目标：
+安装一个 NIS 服务端实例，该实例所在主机 IP 地址为 192.168.2.50，对应主机 nis-master.example.com。 安装一个 NIS 客户端实例，该实例所在主机 IP 地址为 192.168.2.51，对应主机 nis-client.example.com。 使得客户端的用户、用户组、hosts 与服务端的保持同步。 前置条件：
+无。 安装服务端 安装 yum -y install ypserv /etc/ypserv.conf配置保持不变 # # ypserv.conf	In this file you can set certain options for the NIS server, #	and you can deny or restrict access to certain maps based #	on the originating host. # #	See ypserv.conf(5) for a description of the syntax. # # Some options for ypserv."><meta property="og:locale" content="en-us"><meta property="og:image" content="/images/favicon.ico"><style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body blockquote{margin:0;padding:0 1em;color:#57606a;border-left:.25em solid #d0d7de}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style><style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:initial;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style><link href=/index.xml rel=alternate type=application/rss+xml title=王伟的个人博客><link rel=preconnect href=https://fonts.gstatic.com><link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel=stylesheet></head><body><article class=post id=article><div class=row><div class=col-xs-12><div class=site-header><header><div class=header-title><a href=/>persistence</a></div><div class=header-subtitle>我老婆说我是一个执着的人</div></header><div class="row end-md center-xs header-items"></div><div class="row end-xs"></div><div class=header-line></div></div><header class=post-header><h1 class=post-title>安装NIS服务（CentOS 7.9）</h1><div class="row post-desc"><div class=col-xs-6><time class=post-date datetime="2023-08-26 00:00:00 UTC">26 Aug 2023</time></div><div class=col-xs-6><div class=post-author><a target=_blank href=https://dreamwill.github.io/>@许王伟</a></div></div></div></header><div class="post-content markdown-body"><p>安装目标：</p><ul><li><input checked disabled type=checkbox> 安装一个 NIS 服务端实例，该实例所在主机 IP 地址为 192.168.2.50，对应主机 nis-master.example.com。</li><li><input checked disabled type=checkbox> 安装一个 NIS 客户端实例，该实例所在主机 IP 地址为 192.168.2.51，对应主机 nis-client.example.com。</li><li><input checked disabled type=checkbox> 使得客户端的用户、用户组、hosts 与服务端的保持同步。</li></ul><hr><p>前置条件：</p><ul><li><input checked disabled type=checkbox> 无。</li></ul><hr><h2 id=安装服务端>安装服务端</h2><ol><li>安装</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>yum -y install ypserv
+</span></span></code></pre></div><ol start=2><li>/etc/ypserv.conf配置保持不变</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>#
+</span></span><span style=display:flex><span># ypserv.conf	In this file you can set certain options for the NIS server,
+</span></span><span style=display:flex><span>#		and you can deny or restrict access to certain maps based
+</span></span><span style=display:flex><span>#		on the originating host.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span>#		See ypserv.conf(5) for a description of the syntax.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># Some options for ypserv. This things are all not needed, if
+</span></span><span style=display:flex><span># you have a Linux net.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># How many map file handles should be cached ?
+</span></span><span style=display:flex><span>files: 30
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># Should we register ypserv with SLP ?
+</span></span><span style=display:flex><span># slp: no
+</span></span><span style=display:flex><span># After how many seconds we should re-register ypserv with SLP ?
+</span></span><span style=display:flex><span># slp_timeout: 3600
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># xfr requests are only allowed from ports &lt; 1024
+</span></span><span style=display:flex><span>xfr_check_port: yes
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># The following, when uncommented,  will give you shadow like passwords.
+</span></span><span style=display:flex><span># Note that it will not work if you have slave NIS servers in your
+</span></span><span style=display:flex><span># network that do not run the same server as you.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># Host                     : Domain  : Map              : Security 
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># *                        : *       : passwd.byname    : port 
+</span></span><span style=display:flex><span># *                        : *       : passwd.byuid     : port
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># Not everybody should see the shadow passwords, not secure, since
+</span></span><span style=display:flex><span># under MSDOG everbody is root and can access ports &lt; 1024 !!!
+</span></span><span style=display:flex><span>*			   : *       : shadow.byname    : port
+</span></span><span style=display:flex><span>*			   : *       : passwd.adjunct.byname : port
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># If you comment out the next rule, ypserv and rpc.ypxfrd will
+</span></span><span style=display:flex><span># look for YP_SECURE and YP_AUTHDES in the maps. This will make
+</span></span><span style=display:flex><span># the security check a little bit slower, but you only have to
+</span></span><span style=display:flex><span># change the keys on the master server, not the configuration files
+</span></span><span style=display:flex><span># on each NIS server.
+</span></span><span style=display:flex><span># If you have maps with YP_SECURE or YP_AUTHDES, you should create
+</span></span><span style=display:flex><span># a rule for them above, that&#39;s much faster.
+</span></span><span style=display:flex><span># *                        : *       : *                : none
+</span></span></code></pre></div><ol start=3><li>修改配置/etc/hosts</li></ol><p>修改前</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+</span></span><span style=display:flex><span>::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+</span></span></code></pre></div><p>修改后</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+</span></span><span style=display:flex><span>::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+</span></span><span style=display:flex><span>192.168.2.50 nis-master.example.com
+</span></span><span style=display:flex><span>192.168.2.51 nis-client.example.com
+</span></span></code></pre></div><ol start=4><li>修改配置/etc/sysconfig/network</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>echo <span style=color:#e6db74>&#39;NISDOMAIN=nis-example-domain&#39;</span> &gt;&gt; /etc/sysconfig/network
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;YPSERV_ARGS=&#34;-p 811&#34;&#39;</span> &gt;&gt; /etc/sysconfig/network
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;YPXFRD_ARGS=&#34;-p 813&#34;&#39;</span> &gt;&gt; /etc/sysconfig/network
+</span></span></code></pre></div><ol start=5><li>修改配置/etc/sysconfig/yppasswdd</li></ol><p>修改前</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span># The passwd and shadow files are located under the specified
+</span></span><span style=display:flex><span># directory path. rpc.yppasswdd will use these files, not /etc/passwd
+</span></span><span style=display:flex><span># and /etc/shadow.
+</span></span><span style=display:flex><span>#ETCDIR=/etc
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># This option tells rpc.yppasswdd to use a different source file
+</span></span><span style=display:flex><span># instead of /etc/passwd
+</span></span><span style=display:flex><span># You can&#39;t mix usage of this with ETCDIR
+</span></span><span style=display:flex><span>#PASSWDFILE=/etc/passwd
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># This option tells rpc.yppasswdd to use a different source file
+</span></span><span style=display:flex><span># instead of /etc/passwd.
+</span></span><span style=display:flex><span># You can&#39;t mix usage of this with ETCDIR
+</span></span><span style=display:flex><span>#SHADOWFILE=/etc/shadow
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># Additional arguments passed to yppasswd
+</span></span><span style=display:flex><span>YPPASSWDD_ARGS=
+</span></span></code></pre></div><p>修改后</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span># The passwd and shadow files are located under the specified
+</span></span><span style=display:flex><span># directory path. rpc.yppasswdd will use these files, not /etc/passwd
+</span></span><span style=display:flex><span># and /etc/shadow.
+</span></span><span style=display:flex><span>#ETCDIR=/etc
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># This option tells rpc.yppasswdd to use a different source file
+</span></span><span style=display:flex><span># instead of /etc/passwd
+</span></span><span style=display:flex><span># You can&#39;t mix usage of this with ETCDIR
+</span></span><span style=display:flex><span>#PASSWDFILE=/etc/passwd
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># This option tells rpc.yppasswdd to use a different source file
+</span></span><span style=display:flex><span># instead of /etc/passwd.
+</span></span><span style=display:flex><span># You can&#39;t mix usage of this with ETCDIR
+</span></span><span style=display:flex><span>#SHADOWFILE=/etc/shadow
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># Additional arguments passed to yppasswd
+</span></span><span style=display:flex><span>YPPASSWDD_ARGS=&#34;--port 812&#34;
+</span></span></code></pre></div><ol start=6><li>启动服务</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>systemctl restart rpcbind ypserv yppasswdd ypxfrd
+</span></span><span style=display:flex><span>systemctl enable rpcbind ypserv yppasswdd ypxfrd
+</span></span></code></pre></div><ol start=7><li>设置防火墙</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>firewall-cmd --add-service<span style=color:#f92672>=</span>rpc-bind
+</span></span><span style=display:flex><span>firewall-cmd --permanent --add-service<span style=color:#f92672>=</span>rpc-bind
+</span></span><span style=display:flex><span>firewall-cmd --add-port<span style=color:#f92672>=</span>811-813/tcp
+</span></span><span style=display:flex><span>firewall-cmd --add-port<span style=color:#f92672>=</span>811-813/udp
+</span></span><span style=display:flex><span>firewall-cmd --permanent --add-port<span style=color:#f92672>=</span>811-813/tcp
+</span></span><span style=display:flex><span>firewall-cmd --permanent --add-port<span style=color:#f92672>=</span>811-813/udp
+</span></span></code></pre></div><ol start=8><li>创建数据库</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>/usr/lib64/yp/ypinit -m
+</span></span></code></pre></div><p>输出</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>
+</span></span><span style=display:flex><span>At this point, we have to construct a list of the hosts which will run NIS
+</span></span><span style=display:flex><span>servers.  nis-master.example.com is in the list of NIS server hosts.  Please continue to add
+</span></span><span style=display:flex><span>the names for the other hosts, one per line.  When you are done with the
+</span></span><span style=display:flex><span>list, type a &lt;control D&gt;.
+</span></span><span style=display:flex><span>	next host to add:  nis-master.example.com
+</span></span><span style=display:flex><span>	next host to add:  
+</span></span><span style=display:flex><span>The current list of NIS servers looks like this:
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>nis-master.example.com
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Is this correct?  [y/n: y]  y
+</span></span><span style=display:flex><span>We need a few minutes to build the databases...
+</span></span><span style=display:flex><span>Building /var/yp/nis-example-domain/ypservers...
+</span></span><span style=display:flex><span>Running /var/yp/Makefile...
+</span></span><span style=display:flex><span>gmake[1]: 进入目录“/var/yp/nis-example-domain”
+</span></span><span style=display:flex><span>Updating passwd.byname...
+</span></span><span style=display:flex><span>Updating passwd.byuid...
+</span></span><span style=display:flex><span>Updating group.byname...
+</span></span><span style=display:flex><span>Updating group.bygid...
+</span></span><span style=display:flex><span>Updating hosts.byname...
+</span></span><span style=display:flex><span>Updating hosts.byaddr...
+</span></span><span style=display:flex><span>Updating rpc.byname...
+</span></span><span style=display:flex><span>Updating rpc.bynumber...
+</span></span><span style=display:flex><span>Updating services.byname...
+</span></span><span style=display:flex><span>Updating services.byservicename...
+</span></span><span style=display:flex><span>Updating netid.byname...
+</span></span><span style=display:flex><span>Updating protocols.bynumber...
+</span></span><span style=display:flex><span>Updating protocols.byname...
+</span></span><span style=display:flex><span>Updating mail.aliases...
+</span></span><span style=display:flex><span>gmake[1]: 离开目录“/var/yp/nis-example-domain”
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>nis-master.example.com has been set up as a NIS master server.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>Now you can run ypinit -s nis-master.example.com on all slave server.
+</span></span></code></pre></div><ol start=9><li>添加测试用户和用户组，设置用户密码</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>groupadd hadoop
+</span></span><span style=display:flex><span>useradd -m -g hadoop hdfs
+</span></span><span style=display:flex><span>useradd -m -g hadoop yarn
+</span></span><span style=display:flex><span>useradd -m -g hadoop mapred
+</span></span><span style=display:flex><span>passwd hdfs
+</span></span><span style=display:flex><span>passwd yarn
+</span></span><span style=display:flex><span>passwd mapred
+</span></span></code></pre></div><ol start=10><li>更新NIS数据库</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>cd /var/yp;make
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>gmake[1]: 进入目录“/var/yp/nis-example-domain”
+</span></span><span style=display:flex><span>Updating passwd.byname...
+</span></span><span style=display:flex><span>Updating passwd.byuid...
+</span></span><span style=display:flex><span>Updating group.byname...
+</span></span><span style=display:flex><span>Updating group.bygid...
+</span></span><span style=display:flex><span>Updating netid.byname...
+</span></span><span style=display:flex><span>gmake[1]: 离开目录“/var/yp/nis-example-domain”
+</span></span></code></pre></div><hr><h2 id=安装客户端>安装客户端</h2><ol><li>安装</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>yum -y install ypbind yp-tools
+</span></span></code></pre></div><h3 id=方式一通过图形化界面配置>方式一：通过图形化界面配置</h3><ol start=2><li>安装图形化配置所需软件包</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>yum -y install setuptool authconfig-gtk
+</span></span></code></pre></div><ol start=3><li>开启图形化配置界面</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>setup
+</span></span></code></pre></div><ol start=4><li>选择验证配置</li></ol><p><img src=/images/%E6%88%AA%E5%B1%8F2023-08-26-12.35.07.png alt="截屏2023-08-26 12.35.07.png"></p><ol start=5><li>选择使用NIS后，进入下一步</li></ol><p><img src=/images/%E6%88%AA%E5%B1%8F2023-08-26-12.35.50.png alt="截屏2023-08-26 12.35.50.png"></p><ol start=6><li>输入NIS域和服务器地址，选择确定后系统自动配置并启动NIS服务</li></ol><p><img src=/images/%E6%88%AA%E5%B1%8F2023-08-26-12.36.23.png alt="截屏2023-08-26 12.36.23.png"></p><ol start=7><li>系统自动启动NIS服务后会回到如下界面，选择退出即可</li></ol><p><img src=/images/%E6%88%AA%E5%B1%8F2023-08-26-12.37.05.png alt="截屏2023-08-26 12.37.05.png"></p><h3 id=方式二不通过图形化界面配置>方式二：不通过图形化界面配置</h3><ol start=2><li>修改配置/etc/yp.conf</li></ol><p>修改前</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span># /etc/yp.conf - ypbind configuration file
+</span></span><span style=display:flex><span># Valid entries are
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># domain NISDOMAIN server HOSTNAME
+</span></span><span style=display:flex><span>#	Use server HOSTNAME for the domain NISDOMAIN.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># domain NISDOMAIN broadcast
+</span></span><span style=display:flex><span>#	Use  broadcast  on  the local net for domain NISDOMAIN
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># domain NISDOMAIN slp
+</span></span><span style=display:flex><span>#	Query local SLP server for ypserver supporting NISDOMAIN
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># ypserver HOSTNAME
+</span></span><span style=display:flex><span>#	Use server HOSTNAME for the  local  domain.  The
+</span></span><span style=display:flex><span>#	IP-address of server must be listed in /etc/hosts.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># broadcast
+</span></span><span style=display:flex><span>#	If no server for the default domain is specified or
+</span></span><span style=display:flex><span>#	none of them is rechable, try a broadcast call to
+</span></span><span style=display:flex><span>#	find a server.
+</span></span><span style=display:flex><span>#
+</span></span></code></pre></div><p>修改后</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span># /etc/yp.conf - ypbind configuration file
+</span></span><span style=display:flex><span># Valid entries are
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># domain NISDOMAIN server HOSTNAME
+</span></span><span style=display:flex><span>#	Use server HOSTNAME for the domain NISDOMAIN.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># domain NISDOMAIN broadcast
+</span></span><span style=display:flex><span>#	Use  broadcast  on  the local net for domain NISDOMAIN
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># domain NISDOMAIN slp
+</span></span><span style=display:flex><span>#	Query local SLP server for ypserver supporting NISDOMAIN
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># ypserver HOSTNAME
+</span></span><span style=display:flex><span>#	Use server HOSTNAME for the  local  domain.  The
+</span></span><span style=display:flex><span>#	IP-address of server must be listed in /etc/hosts.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># broadcast
+</span></span><span style=display:flex><span>#	If no server for the default domain is specified or
+</span></span><span style=display:flex><span>#	none of them is rechable, try a broadcast call to
+</span></span><span style=display:flex><span>#	find a server.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span>domain nis-example-domain server 192.168.2.50
+</span></span></code></pre></div><ol start=3><li>修改配置/etc/sysconfig/network</li></ol><p>修改前</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span># Created by anaconda
+</span></span></code></pre></div><p>修改后</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>NISDOMAIN=nis-example-domain
+</span></span></code></pre></div><ol start=4><li>修改配置/etc/nsswitch.conf</li></ol><p>修改前</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>#
+</span></span><span style=display:flex><span># /etc/nsswitch.conf
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># An example Name Service Switch config file. This file should be
+</span></span><span style=display:flex><span># sorted with the most-used services at the beginning.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># The entry &#39;[NOTFOUND=return]&#39; means that the search for an
+</span></span><span style=display:flex><span># entry should stop if the search in the previous entry turned
+</span></span><span style=display:flex><span># up nothing. Note that if the search failed due to some other reason
+</span></span><span style=display:flex><span># (like no NIS server responding) then the search continues with the
+</span></span><span style=display:flex><span># next entry.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># Valid entries include:
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span>#	nisplus			Use NIS+ (NIS version 3)
+</span></span><span style=display:flex><span>#	nis			Use NIS (NIS version 2), also called YP
+</span></span><span style=display:flex><span>#	dns			Use DNS (Domain Name Service)
+</span></span><span style=display:flex><span>#	files			Use the local files
+</span></span><span style=display:flex><span>#	db			Use the local database (.db) files
+</span></span><span style=display:flex><span>#	compat			Use NIS on compat mode
+</span></span><span style=display:flex><span>#	hesiod			Use Hesiod for user lookups
+</span></span><span style=display:flex><span>#	sss			Use sssd (System Security Services Daemon)
+</span></span><span style=display:flex><span>#	[NOTFOUND=return]	Stop searching if not found so far
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># WARNING: Running nscd with a secondary caching service like sssd may lead to
+</span></span><span style=display:flex><span># 	   unexpected behaviour, especially with how long entries are cached.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># To use db, put the &#34;db&#34; in front of &#34;files&#34; for entries you want to be
+</span></span><span style=display:flex><span># looked up first in the databases
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># Example:
+</span></span><span style=display:flex><span>#passwd:    db files nisplus nis
+</span></span><span style=display:flex><span>#shadow:    db files nisplus nis
+</span></span><span style=display:flex><span>#group:     db files nisplus nis
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>passwd:     files sss
+</span></span><span style=display:flex><span>shadow:     files sss
+</span></span><span style=display:flex><span>group:      files sss
+</span></span><span style=display:flex><span>#initgroups: files sss
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>#hosts:     db files nisplus nis dns
+</span></span><span style=display:flex><span>hosts:      files dns myhostname
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># Example - obey only what nisplus tells us...
+</span></span><span style=display:flex><span>#services:   nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>#networks:   nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>#protocols:  nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>#rpc:        nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>#ethers:     nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>#netmasks:   nisplus [NOTFOUND=return] files     
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>bootparams: nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>ethers:     files
+</span></span><span style=display:flex><span>netmasks:   files
+</span></span><span style=display:flex><span>networks:   files
+</span></span><span style=display:flex><span>protocols:  files
+</span></span><span style=display:flex><span>rpc:        files
+</span></span><span style=display:flex><span>services:   files sss
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>netgroup:   nisplus sss
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>publickey:  nisplus
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>automount:  files nisplus sss
+</span></span><span style=display:flex><span>aliases:    files nisplus
+</span></span></code></pre></div><p>修改后</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>#
+</span></span><span style=display:flex><span># /etc/nsswitch.conf
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># An example Name Service Switch config file. This file should be
+</span></span><span style=display:flex><span># sorted with the most-used services at the beginning.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># The entry &#39;[NOTFOUND=return]&#39; means that the search for an
+</span></span><span style=display:flex><span># entry should stop if the search in the previous entry turned
+</span></span><span style=display:flex><span># up nothing. Note that if the search failed due to some other reason
+</span></span><span style=display:flex><span># (like no NIS server responding) then the search continues with the
+</span></span><span style=display:flex><span># next entry.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># Valid entries include:
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span>#	nisplus			Use NIS+ (NIS version 3)
+</span></span><span style=display:flex><span>#	nis			Use NIS (NIS version 2), also called YP
+</span></span><span style=display:flex><span>#	dns			Use DNS (Domain Name Service)
+</span></span><span style=display:flex><span>#	files			Use the local files
+</span></span><span style=display:flex><span>#	db			Use the local database (.db) files
+</span></span><span style=display:flex><span>#	compat			Use NIS on compat mode
+</span></span><span style=display:flex><span>#	hesiod			Use Hesiod for user lookups
+</span></span><span style=display:flex><span>#	sss			Use sssd (System Security Services Daemon)
+</span></span><span style=display:flex><span>#	[NOTFOUND=return]	Stop searching if not found so far
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># WARNING: Running nscd with a secondary caching service like sssd may lead to
+</span></span><span style=display:flex><span># 	   unexpected behaviour, especially with how long entries are cached.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># To use db, put the &#34;db&#34; in front of &#34;files&#34; for entries you want to be
+</span></span><span style=display:flex><span># looked up first in the databases
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># Example:
+</span></span><span style=display:flex><span>#passwd:    db files nisplus nis
+</span></span><span style=display:flex><span>#shadow:    db files nisplus nis
+</span></span><span style=display:flex><span>#group:     db files nisplus nis
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>passwd:     files nis sss
+</span></span><span style=display:flex><span>shadow:     files nis sss
+</span></span><span style=display:flex><span>group:      files nis sss
+</span></span><span style=display:flex><span>#initgroups: files sss
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>#hosts:     db files nisplus nis dns
+</span></span><span style=display:flex><span>hosts:      files nis dns myhostname
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span># Example - obey only what nisplus tells us...
+</span></span><span style=display:flex><span>#services:   nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>#networks:   nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>#protocols:  nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>#rpc:        nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>#ethers:     nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>#netmasks:   nisplus [NOTFOUND=return] files     
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>bootparams: nisplus [NOTFOUND=return] files
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>ethers:     files
+</span></span><span style=display:flex><span>netmasks:   files
+</span></span><span style=display:flex><span>networks:   files
+</span></span><span style=display:flex><span>protocols:  files
+</span></span><span style=display:flex><span>rpc:        files
+</span></span><span style=display:flex><span>services:   files sss
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>netgroup:   files nis sss
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>publickey:  nisplus
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>automount:  files nis
+</span></span><span style=display:flex><span>aliases:    files nisplus
+</span></span></code></pre></div><ol start=5><li>修改配置/etc/sysconfig/authconfig</li></ol><p>修改前</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>CACHECREDENTIALS=yes
+</span></span><span style=display:flex><span>FAILLOCKARGS=&#34;deny=4 unlock_time=1200&#34;
+</span></span><span style=display:flex><span>FORCELEGACY=no
+</span></span><span style=display:flex><span>FORCESMARTCARD=no
+</span></span><span style=display:flex><span>IPADOMAINJOINED=no
+</span></span><span style=display:flex><span>IPAV2NONTP=no
+</span></span><span style=display:flex><span>PASSWDALGORITHM=sha512
+</span></span><span style=display:flex><span>USEDB=no
+</span></span><span style=display:flex><span>USEECRYPTFS=no
+</span></span><span style=display:flex><span>USEFAILLOCK=no
+</span></span><span style=display:flex><span>USEFPRINTD=no
+</span></span><span style=display:flex><span>USEHESIOD=no
+</span></span><span style=display:flex><span>USEIPAV2=no
+</span></span><span style=display:flex><span>USEKERBEROS=no
+</span></span><span style=display:flex><span>USELDAP=no
+</span></span><span style=display:flex><span>USELDAPAUTH=no
+</span></span><span style=display:flex><span>USELOCAUTHORIZE=yes
+</span></span><span style=display:flex><span>USEMKHOMEDIR=no
+</span></span><span style=display:flex><span>USENIS=no
+</span></span><span style=display:flex><span>USEPAMACCESS=no
+</span></span><span style=display:flex><span>USEPASSWDQC=no
+</span></span><span style=display:flex><span>USEPWQUALITY=yes
+</span></span><span style=display:flex><span>USESHADOW=yes
+</span></span><span style=display:flex><span>USESMARTCARD=no
+</span></span><span style=display:flex><span>USESSSD=yes
+</span></span><span style=display:flex><span>USESSSDAUTH=no
+</span></span><span style=display:flex><span>USESYSNETAUTH=no
+</span></span><span style=display:flex><span>USEWINBIND=no
+</span></span><span style=display:flex><span>USEWINBINDAUTH=no
+</span></span><span style=display:flex><span>WINBINDKRB5=no
+</span></span></code></pre></div><p>修改后</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>CACHECREDENTIALS=yes
+</span></span><span style=display:flex><span>FAILLOCKARGS=&#34;deny=4 unlock_time=1200&#34;
+</span></span><span style=display:flex><span>FORCELEGACY=no
+</span></span><span style=display:flex><span>FORCESMARTCARD=no
+</span></span><span style=display:flex><span>IPADOMAINJOINED=no
+</span></span><span style=display:flex><span>IPAV2NONTP=no
+</span></span><span style=display:flex><span>PASSWDALGORITHM=sha512
+</span></span><span style=display:flex><span>USEDB=no
+</span></span><span style=display:flex><span>USEECRYPTFS=no
+</span></span><span style=display:flex><span>USEFAILLOCK=no
+</span></span><span style=display:flex><span>USEFPRINTD=no
+</span></span><span style=display:flex><span>USEHESIOD=no
+</span></span><span style=display:flex><span>USEIPAV2=no
+</span></span><span style=display:flex><span>USEKERBEROS=no
+</span></span><span style=display:flex><span>USELDAP=no
+</span></span><span style=display:flex><span>USELDAPAUTH=no
+</span></span><span style=display:flex><span>USELOCAUTHORIZE=yes
+</span></span><span style=display:flex><span>USEMKHOMEDIR=no
+</span></span><span style=display:flex><span>USENIS=yes
+</span></span><span style=display:flex><span>USEPAMACCESS=no
+</span></span><span style=display:flex><span>USEPASSWDQC=no
+</span></span><span style=display:flex><span>USEPWQUALITY=yes
+</span></span><span style=display:flex><span>USESHADOW=yes
+</span></span><span style=display:flex><span>USESMARTCARD=no
+</span></span><span style=display:flex><span>USESSSD=yes
+</span></span><span style=display:flex><span>USESSSDAUTH=no
+</span></span><span style=display:flex><span>USESYSNETAUTH=no
+</span></span><span style=display:flex><span>USEWINBIND=no
+</span></span><span style=display:flex><span>USEWINBINDAUTH=no
+</span></span><span style=display:flex><span>WINBINDKRB5=no
+</span></span></code></pre></div><ol start=6><li>修改配置/etc/pam.d/system-auth</li></ol><p>修改前</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>#%PAM-1.0
+</span></span><span style=display:flex><span># This file is auto-generated.
+</span></span><span style=display:flex><span># User changes will be destroyed the next time authconfig is run.
+</span></span><span style=display:flex><span>auth        required      pam_env.so
+</span></span><span style=display:flex><span>auth        required      pam_faildelay.so delay=2000000
+</span></span><span style=display:flex><span>auth        sufficient    pam_unix.so nullok try_first_pass
+</span></span><span style=display:flex><span>auth        requisite     pam_succeed_if.so uid &gt;= 1000 quiet_success
+</span></span><span style=display:flex><span>auth        required      pam_deny.so
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>account     required      pam_unix.so
+</span></span><span style=display:flex><span>account     sufficient    pam_localuser.so
+</span></span><span style=display:flex><span>account     sufficient    pam_succeed_if.so uid &lt; 1000 quiet
+</span></span><span style=display:flex><span>account     required      pam_permit.so
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>password    requisite     pam_pwquality.so try_first_pass local_users_only retry=3 authtok_type=
+</span></span><span style=display:flex><span>password    sufficient    pam_unix.so sha512 shadow nullok try_first_pass use_authtok
+</span></span><span style=display:flex><span>password    required      pam_deny.so
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>session     optional      pam_keyinit.so revoke
+</span></span><span style=display:flex><span>session     required      pam_limits.so
+</span></span><span style=display:flex><span>-session     optional      pam_systemd.so
+</span></span><span style=display:flex><span>session     [success=1 default=ignore] pam_succeed_if.so service in crond quiet use_uid
+</span></span><span style=display:flex><span>session     required      pam_unix.so
+</span></span></code></pre></div><p>修改后</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>#%PAM-1.0
+</span></span><span style=display:flex><span># This file is auto-generated.
+</span></span><span style=display:flex><span># User changes will be destroyed the next time authconfig is run.
+</span></span><span style=display:flex><span>auth        required      pam_env.so
+</span></span><span style=display:flex><span>auth        required      pam_faildelay.so delay=2000000
+</span></span><span style=display:flex><span>auth        sufficient    pam_unix.so nullok try_first_pass
+</span></span><span style=display:flex><span>auth        requisite     pam_succeed_if.so uid &gt;= 1000 quiet_success
+</span></span><span style=display:flex><span>auth        required      pam_deny.so
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>account     required      pam_unix.so
+</span></span><span style=display:flex><span>account     sufficient    pam_localuser.so
+</span></span><span style=display:flex><span>account     sufficient    pam_succeed_if.so uid &lt; 1000 quiet
+</span></span><span style=display:flex><span>account     required      pam_permit.so
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>password    requisite     pam_pwquality.so try_first_pass local_users_only retry=3 authtok_type=
+</span></span><span style=display:flex><span>password    sufficient    pam_unix.so sha512 shadow nis nullok try_first_pass use_authtok
+</span></span><span style=display:flex><span>password    required      pam_deny.so
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>session     optional      pam_keyinit.so revoke
+</span></span><span style=display:flex><span>session     required      pam_limits.so
+</span></span><span style=display:flex><span>-session     optional      pam_systemd.so
+</span></span><span style=display:flex><span>session     [success=1 default=ignore] pam_succeed_if.so service in crond quiet use_uid
+</span></span><span style=display:flex><span>session     required      pam_unix.so
+</span></span></code></pre></div><ol start=7><li>启动服务</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>systemctl restart rpcbind ypbind
+</span></span><span style=display:flex><span>systemctl enable rpcbind ypbind
+</span></span></code></pre></div><h2 id=测试用户用户组hosts同步情况>测试用户、用户组、hosts同步情况</h2><ol><li>在主机nis-client.example.com上查看用户和用户组是否存在，如果存在说明已经同步</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>id hdfs;id yarn;id mapred
+</span></span></code></pre></div><p>输出</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>uid=1000(hdfs) gid=1000(hadoop) 组=1000(hadoop)
+</span></span><span style=display:flex><span>uid=1001(yarn) gid=1000(hadoop) 组=1000(hadoop)
+</span></span><span style=display:flex><span>uid=1002(mapred) gid=1000(hadoop) 组=1000(hadoop)
+</span></span></code></pre></div><ol start=2><li>在主机nis-client.example.com上ping主机nis-master.example.com，如果可以ping通说明hosts已经同步</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ping -c <span style=color:#ae81ff>4</span> nis-master.example.com
+</span></span></code></pre></div><p>输出</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>PING nis-master.example.com (192.168.2.50) 56(84) bytes of data.
+</span></span><span style=display:flex><span>64 bytes from nis-master.example.com (192.168.2.50): icmp_seq=1 ttl=64 time=0.435 ms
+</span></span><span style=display:flex><span>64 bytes from nis-master.example.com (192.168.2.50): icmp_seq=2 ttl=64 time=0.729 ms
+</span></span><span style=display:flex><span>64 bytes from nis-master.example.com (192.168.2.50): icmp_seq=3 ttl=64 time=0.837 ms
+</span></span><span style=display:flex><span>64 bytes from nis-master.example.com (192.168.2.50): icmp_seq=4 ttl=64 time=0.843 ms
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>--- nis-master.example.com ping statistics ---
+</span></span><span style=display:flex><span>4 packets transmitted, 4 received, 0% packet loss, time 3003ms
+</span></span><span style=display:flex><span>rtt min/avg/max/mdev = 0.435/0.711/0.843/0.165 ms
+</span></span></code></pre></div><p>通过上面2步测试证明主机nis-client.example.com的用户、用户组、hosts 与服务端nis-master.example.com的保持同步。</p></div><div class="row middle-xs"><div class=col-xs-12></div></div><div class=row><div class=col-xs-12></div></div><div style=height:50px></div><div class=site-footer></div></div></div></article><script></script></body></html>
