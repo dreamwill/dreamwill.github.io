@@ -7,8 +7,8 @@ draft: false
 
 安装目标：
 
-- [x] 安装一个FreeIPA服务端实例，该实例所在主机 IP 地址为 192.168.2.60，对应主机 ipa-server.loaddream.test。
-- [x] 安装一个FreeIPA客户端实例，该实例所在主机 IP 地址为 192.168.2.61，对应主机 machine1.loaddream.test。
+- [x] 安装一个FreeIPA服务端实例，该实例所在主机 IP 地址为 192.168.2.60，对应主机 ipa-server.xuwangwei.test。
+- [x] 安装一个FreeIPA客户端实例，该实例所在主机 IP 地址为 192.168.2.61，对应主机 machine1.xuwangwei.test。
 
 ---
 
@@ -22,21 +22,15 @@ draft: false
 
 1. 设置主机名
 ```bash
-hostnamectl hostname ipa-server.loaddream.test
+hostnamectl hostname ipa-server.xuwangwei.test
 ```
 
 2. 修改配置/etc/hosts
 
-修改前
 ```text
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-```
-修改后
-```text
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-192.168.2.60 ipa-server.loaddream.test ipa-server
+192.168.2.60 ipa-server.xuwangwei.test ipa-server
 ```
 
 3. 安装
@@ -51,11 +45,11 @@ systemctl start rngd
 
 5. 设置服务端
 ```bash
-ipa-server-install --realm=LOADDREAM.TEST --domain=loaddream.test \
---hostname=ipa-server.loaddream.test --ip-address=192.168.2.60 \
+ipa-server-install --realm=XUWANGWEI.TEST --domain=xuwangwei.test \
+--hostname=ipa-server.xuwangwei.test --ip-address=192.168.2.60 \
 --ntp-pool=time.apple.com --mkhomedir \
---setup-dns --no-forwarders --reverse-zone=2.168.192.in-addr.arpa --auto-reverse --netbios-name=LOADDREAM \
---ds-password='loaddream4you' --admin-password='loaddream4you' --unattended
+--setup-dns --no-forwarders --reverse-zone=2.168.192.in-addr.arpa --auto-reverse --netbios-name=XUWANGWEI \
+--ds-password='xuwangwei3306' --admin-password='xuwangwei3306' --unattended
 ```
 下面是输出：
 ```text
@@ -65,7 +59,7 @@ Checking DNS domain 2.168.192.in-addr.arpa, please wait ...
 The log file for this installation can be found in /var/log/ipaserver-install.log
 ==============================================================================
 This program will set up the IPA Server.
-Version 4.10.1
+Version 4.10.2
 
 This includes:
   * Configure a stand-alone CA (dogtag) for certificate management
@@ -77,21 +71,21 @@ This includes:
   * Configure SID generation
   * Configure the KDC to enable PKINIT
 
-Warning: skipping DNS resolution of host ipa-server.loaddream.test
-Checking DNS domain loaddream.test., please wait ...
+Warning: skipping DNS resolution of host ipa-server.xuwangwei.test
+Checking DNS domain xuwangwei.test., please wait ...
 Checking DNS domain 2.168.192.in-addr.arpa, please wait ...
 Checking DNS domain 2.168.192.in-addr.arpa, please wait ...
 Using reverse zone(s) 2.168.192.in-addr.arpa.
 
 The IPA Master Server will be configured with:
-Hostname:       ipa-server.loaddream.test
+Hostname:       ipa-server.xuwangwei.test
 IP address(es): 192.168.2.60
-Domain name:    loaddream.test
-Realm name:     LOADDREAM.TEST
+Domain name:    xuwangwei.test
+Realm name:     XUWANGWEI.TEST
 
 The CA will be configured with:
-Subject DN:   CN=Certificate Authority,O=LOADDREAM.TEST
-Subject base: O=LOADDREAM.TEST
+Subject DN:   CN=Certificate Authority,O=XUWANGWEI.TEST
+Subject base: O=XUWANGWEI.TEST
 Chaining:     self-signed
 
 BIND DNS server will be configured to serve IPA domain with:
@@ -106,53 +100,54 @@ Configuration of chrony was changed by installer.
 Attempting to sync time with chronyc.
 Time synchronization was successful.
 Configuring directory server (dirsrv). Estimated time: 30 seconds
-  [1/42]: creating directory server instance
+  [1/43]: creating directory server instance
 Validate installation settings ...
 Create file system structures ...
 selinux is disabled, will not relabel ports or files.
-Create database backend: dc=loaddream,dc=test ...
+Create database backend: dc=xuwangwei,dc=test ...
 Perform post-installation tasks ...
-  [2/42]: tune ldbm plugin
-  [3/42]: adding default schema
-  [4/42]: enabling memberof plugin
-  [5/42]: enabling winsync plugin
-  [6/42]: configure password logging
-  [7/42]: configuring replication version plugin
-  [8/42]: enabling IPA enrollment plugin
-  [9/42]: configuring uniqueness plugin
-  [10/42]: configuring uuid plugin
-  [11/42]: configuring modrdn plugin
-  [12/42]: configuring DNS plugin
-  [13/42]: enabling entryUSN plugin
-  [14/42]: configuring lockout plugin
-  [15/42]: configuring graceperiod plugin
-  [16/42]: configuring topology plugin
-  [17/42]: creating indices
-  [18/42]: enabling referential integrity plugin
-  [19/42]: configuring certmap.conf
-  [20/42]: configure new location for managed entries
-  [21/42]: configure dirsrv ccache and keytab
-  [22/42]: enabling SASL mapping fallback
-  [23/42]: restarting directory server
-  [24/42]: adding sasl mappings to the directory
-  [25/42]: adding default layout
-  [26/42]: adding delegation layout
-  [27/42]: creating container for managed entries
-  [28/42]: configuring user private groups
-  [29/42]: configuring netgroups from hostgroups
-  [30/42]: creating default Sudo bind user
-  [31/42]: creating default Auto Member layout
-  [32/42]: adding range check plugin
-  [33/42]: creating default HBAC rule allow_all
-  [34/42]: adding entries for topology management
-  [35/42]: initializing group membership
-  [36/42]: adding master entry
-  [37/42]: initializing domain level
-  [38/42]: configuring Posix uid/gid generation
-  [39/42]: adding replication acis
-  [40/42]: activating sidgen plugin
-  [41/42]: activating extdom plugin
-  [42/42]: configuring directory to start on boot
+  [2/43]: tune ldbm plugin
+  [3/43]: adding default schema
+  [4/43]: enabling memberof plugin
+  [5/43]: enabling winsync plugin
+  [6/43]: configure password logging
+  [7/43]: configuring replication version plugin
+  [8/43]: enabling IPA enrollment plugin
+  [9/43]: configuring uniqueness plugin
+  [10/43]: configuring uuid plugin
+  [11/43]: configuring modrdn plugin
+  [12/43]: configuring DNS plugin
+  [13/43]: enabling entryUSN plugin
+  [14/43]: configuring lockout plugin
+  [15/43]: configuring graceperiod plugin
+  [16/43]: configuring topology plugin
+  [17/43]: creating indices
+  [18/43]: enabling referential integrity plugin
+  [19/43]: configuring certmap.conf
+  [20/43]: configure new location for managed entries
+  [21/43]: configure dirsrv ccache and keytab
+  [22/43]: enabling SASL mapping fallback
+  [23/43]: restarting directory server
+  [24/43]: adding sasl mappings to the directory
+  [25/43]: adding default layout
+  [26/43]: adding delegation layout
+  [27/43]: creating container for managed entries
+  [28/43]: configuring user private groups
+  [29/43]: configuring netgroups from hostgroups
+  [30/43]: creating default Sudo bind user
+  [31/43]: creating default Auto Member layout
+  [32/43]: adding range check plugin
+  [33/43]: creating default HBAC rule allow_all
+  [34/43]: adding entries for topology management
+  [35/43]: initializing group membership
+  [36/43]: adding master entry
+  [37/43]: initializing domain level
+  [38/43]: configuring Posix uid/gid generation
+  [39/43]: adding replication acis
+  [40/43]: activating sidgen plugin
+  [41/43]: activating extdom plugin
+  [42/43]: configuring directory to start on boot
+  [43/43]: restarting directory server
 Done configuring directory server (dirsrv).
 Configuring Kerberos KDC (krb5kdc)
   [1/11]: adding kerberos container to the directory
@@ -256,8 +251,6 @@ Upgrading IPA:. Estimated time: 1 minute 30 seconds
   [5/10]: disabling Schema Compat
   [6/10]: starting directory server
   [7/10]: upgrading server
-Could not get dnaHostname entries in 60 seconds
-Could not get dnaHostname entries in 60 seconds
   [8/10]: stopping directory server
   [9/10]: restoring configuration
   [10/10]: starting directory server
@@ -278,7 +271,7 @@ Configuring DNS (named)
 created new /etc/named.conf
 created named user config '/etc/named/ipa-ext.conf'
 created named user config '/etc/named/ipa-options-ext.conf'
-named user config '/etc/named/ipa-logging-ext.conf' already exists
+created named user config '/etc/named/ipa-logging-ext.conf'
   [11/13]: setting up server configuration
   [12/13]: configuring named to start on boot
   [13/13]: changing resolv.conf to point to ourselves
@@ -297,9 +290,9 @@ Restarting ipa-dnskeysyncd
 Restarting named
 Updating DNS system records
 Configuring SID generation
-  [1/8]: creating samba domain object
-  [2/8]: adding admin(group) SIDs
-  [3/8]: adding RID bases
+  [1/8]: adding RID bases
+  [2/8]: creating samba domain object
+  [3/8]: adding admin(group) SIDs
   [4/8]: updating Kerberos config
 'dns_lookup_kdc' already set to 'true', nothing to do.
   [5/8]: activating sidgen task
@@ -310,14 +303,14 @@ This step may take considerable amount of time, please wait..
 Done.
 Configuring client side components
 This program will set up IPA client.
-Version 4.10.1
+Version 4.10.2
 
 Using existing certificate '/etc/ipa/ca.crt'.
-Client hostname: ipa-server.loaddream.test
-Realm: LOADDREAM.TEST
-DNS Domain: loaddream.test
-IPA Server: ipa-server.loaddream.test
-BaseDN: dc=loaddream,dc=test
+Client hostname: ipa-server.xuwangwei.test
+Realm: XUWANGWEI.TEST
+DNS Domain: xuwangwei.test
+IPA Server: ipa-server.xuwangwei.test
+BaseDN: dc=xuwangwei,dc=test
 
 Configured /etc/sssd/sssd.conf
 Systemwide CA database updated.
@@ -328,7 +321,7 @@ SSSD enabled
 Configured /etc/openldap/ldap.conf
 Configured /etc/ssh/ssh_config
 Configured /etc/ssh/sshd_config.d/04-ipa.conf
-Configuring loaddream.test as NIS domain.
+Configuring xuwangwei.test as NIS domain.
 Client configuration complete.
 The ipa-client-install command was successful
 
@@ -358,9 +351,12 @@ The ipa-server-install command was successful
 ```
 
 6. 允许PTR同步
-```bash
-kinit admin
-ipa dnsconfig-mod --allow-sync-ptr=true
+```console
+[root@ipa-server ~]# kinit admin
+Password for admin@XUWANGWEI.TEST: 
+[root@ipa-server ~]# ipa dnsconfig-mod --allow-sync-ptr=true
+  允许PTR同步: True
+  IPA DNS服务器: ipa-server.xuwangwei.test
 ```
 
 7. 设置防火墙
@@ -374,7 +370,7 @@ firewall-cmd --add-service={freeipa-4,dns} --permanent
 
 ## 进入Web管理平台（可选）
 
-1. 用浏览器打开https://ipa-server.loaddream.test
+1. 用浏览器打开https://ipa-server.xuwangwei.test
 
 ![截屏2023-08-27 02.49.37.png](/images/截屏2023-08-27-02.49.37.png)
 
@@ -388,21 +384,15 @@ firewall-cmd --add-service={freeipa-4,dns} --permanent
 
 1. 设置主机名
 ```bash
-hostnamectl hostname machine1.loaddream.test
+hostnamectl hostname machine1.xuwangwei.test
 ```
 
 2. 修改配置/etc/hosts
 
-修改前
 ```text
 127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-```
-修改后
-```text
-127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
-192.168.2.61 machine1.loaddream.test machine1
+192.168.2.61 machine1.xuwangwei.test machine1
 ```
 
 3. 安装
@@ -419,19 +409,19 @@ nmcli c up id ens160
 5. 设置客户端
 ```bash
 ipa-client-install --ntp-pool=time.apple.com --mkhomedir \
---principal admin --password='loaddream4you' --unattended
+--principal admin --password='xuwangwei3306' --unattended
 ```
 下面是设置过程中的输出。客户端的设置过程相较服务端的设置简单很多，速度也快很多。
 ```text
 This program will set up IPA client.
-Version 4.10.1
+Version 4.10.2
 
 Discovery was successful!
-Client hostname: machine1.loaddream.test
-Realm: LOADDREAM.TEST
-DNS Domain: loaddream.test
-IPA Server: ipa-server.loaddream.test
-BaseDN: dc=loaddream,dc=test
+Client hostname: machine1.xuwangwei.test
+Realm: XUWANGWEI.TEST
+DNS Domain: xuwangwei.test
+IPA Server: ipa-server.xuwangwei.test
+BaseDN: dc=xuwangwei,dc=test
 NTP pool: time.apple.com
 
 Synchronizing time
@@ -439,15 +429,17 @@ Configuration of chrony was changed by installer.
 Attempting to sync time with chronyc.
 Time synchronization was successful.
 Successfully retrieved CA cert
-    Subject:     CN=Certificate Authority,O=LOADDREAM.TEST
-    Issuer:      CN=Certificate Authority,O=LOADDREAM.TEST
-    Valid From:  2023-09-16 19:24:26
-    Valid Until: 2043-09-16 19:24:26
+    Subject:     CN=Certificate Authority,O=XUWANGWEI.TEST
+    Issuer:      CN=Certificate Authority,O=XUWANGWEI.TEST
+    Valid From:  2023-12-10 01:11:36
+    Valid Until: 2043-12-10 01:11:36
 
-Enrolled in IPA realm LOADDREAM.TEST
+Enrolled in IPA realm XUWANGWEI.TEST
 Created /etc/ipa/default.conf
 Configured /etc/sssd/sssd.conf
 Systemwide CA database updated.
+Hostname (machine1.xuwangwei.test) does not have A/AAAA record.
+Missing reverse record(s) for address(es): fdb4:1b:7835:4c67:20c:29ff:fe7c:a184.
 Adding SSH public key from /etc/ssh/ssh_host_ecdsa_key.pub
 Adding SSH public key from /etc/ssh/ssh_host_ed25519_key.pub
 Adding SSH public key from /etc/ssh/ssh_host_rsa_key.pub
@@ -455,13 +447,13 @@ SSSD enabled
 Configured /etc/openldap/ldap.conf
 Configured /etc/ssh/ssh_config
 Configured /etc/ssh/sshd_config.d/04-ipa.conf
-Configuring loaddream.test as NIS domain.
-Configured /etc/krb5.conf for IPA realm LOADDREAM.TEST
+Configuring xuwangwei.test as NIS domain.
+Configured /etc/krb5.conf for IPA realm XUWANGWEI.TEST
 Client configuration complete.
 The ipa-client-install command was successful
 ```
 
 6. 查看Web管理页面
 
-![20230903185835.jpg](/images/20230903185835.jpg)
+![截屏2023-12-10-10.20.52.png](/images/截屏2023-12-10-10.20.52.png)
 从上图中可以看到客户端已经成功注册。至此，客户端已经安装完毕。
