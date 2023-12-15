@@ -1,0 +1,766 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=generator content="Hugo 0.119.0"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="许王伟"><meta property="og:url" content="https://dreamwill.github.io/posts/%E5%AE%89%E8%A3%85hadoop%E9%9B%86%E7%BE%A4rocky-linux-9.2/"><link rel=canonical href=https://dreamwill.github.io/posts/%E5%AE%89%E8%A3%85hadoop%E9%9B%86%E7%BE%A4rocky-linux-9.2/><link rel=apple-touch-icon href=/images/favicon.ico><link rel=icon href=/images/favicon.ico><link rel=shortcut href=/images/favicon.ico><link rel=alternate type=application/atom+xml href=https://dreamwill.github.io/index.xml title=王伟的个人博客><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/dreamwill.github.io\/"},"articleSection":"posts","name":"安装 Hadoop 集群(Rocky Linux 9.2)","headline":"安装 Hadoop 集群(Rocky Linux 9.2)","description":"安装目标：\nHadoop 集群启用 Kerberos 认证。 HDFS 由 3 个 NameNode、5 个 DataNode 组成高可用（High Availability）集群。 MapReduce 由 1 个 JobHistory Server 组成。 YARN 由 2 个 ResourceManager、5 个 NodeManager 组成高可用集群。 前置条件：\n已安装JDK 8。 已安装 FreeIPA。可以参考安装 FreeIPA(Rocky Linux 9.2)。 已编译 container-executor。可以参考安装 Hadoop 过程中遇到的问题与解决方案。 已编译 openssl-1.1.1。可以参考安装 Hadoop 过程中遇到的问题与解决方案。 ipa-server ipa-client namenode zkfc journalnode datanode jobhistory server resource manager node manager zookeeper ipa-server ✔️ machine1 ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ machine2 ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ machine3 ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ machine4 ✔️ ✔️ ✔️ ✔️ ✔️ machine5 ✔️ ✔️ ✔️ ✔️ ✔️ 目录布局","inLanguage":"en-US","author":"许王伟","creator":"许王伟","publisher":"许王伟","accountablePerson":"许王伟","copyrightHolder":"许王伟","copyrightYear":"2023","datePublished":"2023-12-10 00:00:00 \u002b0000 UTC","dateModified":"2023-12-10 00:00:00 \u002b0000 UTC","url":"https:\/\/dreamwill.github.io\/posts\/%E5%AE%89%E8%A3%85hadoop%E9%9B%86%E7%BE%A4rocky-linux-9.2\/","keywords":[]}</script><title>安装 Hadoop 集群(Rocky Linux 9.2)</title><meta property="og:title" content="安装 Hadoop 集群(Rocky Linux 9.2)"><meta property="og:type" content="article"><meta property="og:description" content="安装目标：
+Hadoop 集群启用 Kerberos 认证。 HDFS 由 3 个 NameNode、5 个 DataNode 组成高可用（High Availability）集群。 MapReduce 由 1 个 JobHistory Server 组成。 YARN 由 2 个 ResourceManager、5 个 NodeManager 组成高可用集群。 前置条件：
+已安装JDK 8。 已安装 FreeIPA。可以参考安装 FreeIPA(Rocky Linux 9.2)。 已编译 container-executor。可以参考安装 Hadoop 过程中遇到的问题与解决方案。 已编译 openssl-1.1.1。可以参考安装 Hadoop 过程中遇到的问题与解决方案。 ipa-server ipa-client namenode zkfc journalnode datanode jobhistory server resource manager node manager zookeeper ipa-server ✔️ machine1 ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ machine2 ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ machine3 ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ machine4 ✔️ ✔️ ✔️ ✔️ ✔️ machine5 ✔️ ✔️ ✔️ ✔️ ✔️ 目录布局"><meta name=description content="安装目标：
+Hadoop 集群启用 Kerberos 认证。 HDFS 由 3 个 NameNode、5 个 DataNode 组成高可用（High Availability）集群。 MapReduce 由 1 个 JobHistory Server 组成。 YARN 由 2 个 ResourceManager、5 个 NodeManager 组成高可用集群。 前置条件：
+已安装JDK 8。 已安装 FreeIPA。可以参考安装 FreeIPA(Rocky Linux 9.2)。 已编译 container-executor。可以参考安装 Hadoop 过程中遇到的问题与解决方案。 已编译 openssl-1.1.1。可以参考安装 Hadoop 过程中遇到的问题与解决方案。 ipa-server ipa-client namenode zkfc journalnode datanode jobhistory server resource manager node manager zookeeper ipa-server ✔️ machine1 ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ machine2 ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ machine3 ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ ✔️ machine4 ✔️ ✔️ ✔️ ✔️ ✔️ machine5 ✔️ ✔️ ✔️ ✔️ ✔️ 目录布局"><meta property="og:locale" content="en-us"><meta property="og:image" content="/images/favicon.ico"><style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body blockquote{margin:0;padding:0 1em;color:#57606a;border-left:.25em solid #d0d7de}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style><style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:initial;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style><link href=/index.xml rel=alternate type=application/rss+xml title=王伟的个人博客><link rel=preconnect href=https://fonts.gstatic.com><link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel=stylesheet></head><body><article class=post id=article><div class=row><div class=col-xs-12><div class=site-header><header><div class=header-title><a href=/>persistence</a></div><div class=header-subtitle>我老婆说我是一个执着的人</div></header><div class="row end-md center-xs header-items"></div><div class="row end-xs"></div><div class=header-line></div></div><header class=post-header><h1 class=post-title>安装 Hadoop 集群(Rocky Linux 9.2)</h1><div class="row post-desc"><div class=col-xs-6><time class=post-date datetime="2023-12-10 00:00:00 UTC">10 Dec 2023</time></div><div class=col-xs-6><div class=post-author><a target=_blank href=https://dreamwill.github.io/>@许王伟</a></div></div></div></header><div class="post-content markdown-body"><p>安装目标：</p><ul><li><input checked disabled type=checkbox> Hadoop 集群启用 Kerberos 认证。</li><li><input checked disabled type=checkbox> HDFS 由 3 个 NameNode、5 个 DataNode 组成高可用（High Availability）集群。</li><li><input checked disabled type=checkbox> MapReduce 由 1 个 JobHistory Server 组成。</li><li><input checked disabled type=checkbox> YARN 由 2 个 ResourceManager、5 个 NodeManager 组成高可用集群。</li></ul><hr><p>前置条件：</p><ul><li><input checked disabled type=checkbox> 已安装JDK 8。</li><li><input checked disabled type=checkbox> 已安装 FreeIPA。可以参考<a href=../%E5%AE%89%E8%A3%85freeiparockylinux-9.2/>安装 FreeIPA(Rocky Linux 9.2)</a>。</li><li><input checked disabled type=checkbox> 已编译 container-executor。可以参考<a href=../%E5%AE%89%E8%A3%85hadoop%E8%BF%87%E7%A8%8B%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98%E4%B8%8E%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/>安装 Hadoop 过程中遇到的问题与解决方案</a>。</li><li><input checked disabled type=checkbox> 已编译 openssl-1.1.1。可以参考<a href=../%E5%AE%89%E8%A3%85hadoop%E8%BF%87%E7%A8%8B%E4%B8%AD%E9%81%87%E5%88%B0%E7%9A%84%E9%97%AE%E9%A2%98%E4%B8%8E%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/>安装 Hadoop 过程中遇到的问题与解决方案</a>。</li></ul><hr><table><thead><tr><th></th><th>ipa-server</th><th>ipa-client</th><th>namenode</th><th>zkfc</th><th>journalnode</th><th>datanode</th><th>jobhistory server</th><th>resource manager</th><th>node manager</th><th>zookeeper</th></tr></thead><tbody><tr><td>ipa-server</td><td>✔️</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>machine1</td><td></td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td><td></td><td>✔️</td><td>✔️</td></tr><tr><td>machine2</td><td></td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td><td></td><td></td><td>✔️</td><td>✔️</td></tr><tr><td>machine3</td><td></td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td><td>✔️</td><td></td><td></td><td>✔️</td><td>✔️</td></tr><tr><td>machine4</td><td></td><td>✔️</td><td></td><td></td><td></td><td>✔️</td><td></td><td>✔️</td><td>✔️</td><td>✔️</td></tr><tr><td>machine5</td><td></td><td>✔️</td><td></td><td></td><td></td><td>✔️</td><td></td><td>✔️</td><td>✔️</td><td>✔️</td></tr></tbody></table><hr><p>目录布局</p><table><thead><tr><th></th><th>User:Group</th><th>Permissions</th><th>说明</th></tr></thead><tbody><tr><td>/opt/hadoop</td><td>root:hadoop</td><td>755</td><td>环境变量 HADOOP_HOME 的值，是 Hadoop 的家目录</td></tr><tr><td>/etc/hadoop</td><td>root:hadoop</td><td>755</td><td>环境变量 HADOOP_CONF_DIR 的值，是 Hadoop 的配置目录</td></tr><tr><td>/var/lib/hadoop</td><td>root:hadoop</td><td>770</td><td>core-site.xml 中 hadoop.tmp.dir 的值，是 Hadoop 的数据目录</td></tr><tr><td>/var/log/hadoop</td><td>hdfs:hadoop</td><td>775</td><td>环境变量 HADOOP_LOG_DIR 的值，是 Hadoop 的日志目录</td></tr><tr><td>/opt/zookeeper</td><td>zookeeper:zookeeper</td><td>755</td><td>环境变量 ZOO_KEEPER_HOME 的值，是 ZooKeeper 的家目录</td></tr><tr><td>/etc/zookeeper</td><td>zookeeper:zookeeper</td><td>755</td><td>环境变量 ZOOCFGDIR 的值，是 ZooKeeper 的配置目录</td></tr><tr><td>/var/lib/zookeeper</td><td>zookeeper:zookeeper</td><td>750</td><td>zoo.cfg 中 dataDir 的值，是 ZooKeeper 的数据目录</td></tr><tr><td>/var/log/zookeeper</td><td>zookeeper:zookeeper</td><td>755</td><td>环境变量 ZOO_LOG_DIR 的值，是 ZooKeeper 的日志目录</td></tr></tbody></table><h2 id=准备用户>准备用户</h2><blockquote><p>注意⚠️：下面的命令是在主机ipa-server上执行的。</p></blockquote><ol><li>身份认证</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span>[root@ipa-server ~]# kinit admin
+</span></span><span style=display:flex><span>Password for admin@XUWANGWEI.TEST: 
+</span></span></code></pre></div><ol start=2><li>新增用户组hadoop</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span>[root@ipa-server ~]# ipa group-add hadoop --gid<span style=color:#f92672>=</span><span style=color:#ae81ff>1532600004</span>
+</span></span></code></pre></div><ol start=3><li>新增用户hdfs</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span># 添加用户hdfs
+</span></span><span style=display:flex><span>[root@ipa-server ~]# ipa user-add hdfs --first<span style=color:#f92672>=</span>hdfs --last<span style=color:#f92672>=</span>hadoop --shell<span style=color:#f92672>=</span>/bin/bash --gidnumber<span style=color:#f92672>=</span><span style=color:#ae81ff>1532600004</span>
+</span></span><span style=display:flex><span># 生成用户hdfs的ssh公钥和私钥
+</span></span><span style=display:flex><span>[root@ipa-server ~]# su - hdfs
+</span></span><span style=display:flex><span>[hdfs@ipa-server ~]$ ssh-keygen -t rsa -P <span style=color:#e6db74>&#39;&#39;</span> -f ~/.ssh/id_rsa
+</span></span><span style=display:flex><span>[hdfs@ipa-server ~]$ cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys
+</span></span><span style=display:flex><span>[hdfs@ipa-server ~]$ chmod <span style=color:#ae81ff>0600</span> ~/.ssh/authorized_keys
+</span></span><span style=display:flex><span>[hdfs@ipa-server ~]$ exit
+</span></span><span style=display:flex><span># 上传用户hdfs的ssh公钥
+</span></span><span style=display:flex><span>[root@ipa-server ~]# ipa user-mod hdfs --sshpubkey<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;</span><span style=color:#66d9ef>$(</span> cat ~hdfs/.ssh/id_rsa.pub <span style=color:#66d9ef>)</span><span style=color:#e6db74>&#34;</span>
+</span></span></code></pre></div><ol start=4><li>新增用户yarn</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span>ipa user-add yarn --first=yarn --last=hadoop --shell=/bin/bash --gidnumber=1532600004
+</span></span><span style=display:flex><span>su - yarn
+</span></span><span style=display:flex><span>ssh-keygen -t rsa -P &#39;&#39; -f ~/.ssh/id_rsa
+</span></span><span style=display:flex><span>cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys
+</span></span><span style=display:flex><span>chmod 0600 ~/.ssh/authorized_keys
+</span></span><span style=display:flex><span>exit
+</span></span><span style=display:flex><span>ipa user-mod yarn --sshpubkey=&#34;$( cat ~yarn/.ssh/id_rsa.pub )&#34;
+</span></span></code></pre></div><ol start=5><li>新增用户mapred</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span>ipa user-add mapred --first=mapred --last=hadoop --shell=/bin/bash --gidnumber=1532600004
+</span></span><span style=display:flex><span>su - mapred
+</span></span><span style=display:flex><span>ssh-keygen -t rsa -P &#39;&#39; -f ~/.ssh/id_rsa
+</span></span><span style=display:flex><span>cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys
+</span></span><span style=display:flex><span>chmod 0600 ~/.ssh/authorized_keys
+</span></span><span style=display:flex><span>exit
+</span></span><span style=display:flex><span>ipa user-mod mapred --sshpubkey=&#34;$( cat ~mapred/.ssh/id_rsa.pub )&#34;
+</span></span></code></pre></div><ol start=6><li>新增用户zookeeper</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span>ipa user-add zookeeper --first=zookeeper --last=hadoop --shell=/bin/bash
+</span></span><span style=display:flex><span>su - zookeeper
+</span></span><span style=display:flex><span>ssh-keygen -t rsa -P &#39;&#39; -f ~/.ssh/id_rsa
+</span></span><span style=display:flex><span>cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys
+</span></span><span style=display:flex><span>chmod 0600 ~/.ssh/authorized_keys
+</span></span><span style=display:flex><span>exit
+</span></span><span style=display:flex><span>ipa user-mod zookeeper --sshpubkey=&#34;$( cat ~zookeeper/.ssh/id_rsa.pub )&#34;
+</span></span></code></pre></div><hr><h2 id=共享家目录hadoop-和-zookeeper-配置目录>共享家目录、Hadoop 和 ZooKeeper 配置目录</h2><blockquote><p>注意⚠️：下面的命令是在主机ipa-server上执行的。</p></blockquote><ol><li>设置防火墙</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>firewall-cmd --add-service<span style=color:#f92672>={</span>nfs,rpc-bind,mountd<span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>firewall-cmd --add-service<span style=color:#f92672>={</span>nfs,rpc-bind,mountd<span style=color:#f92672>}</span> --permanent
+</span></span></code></pre></div><ol start=2><li>修改NFS配置文件/etc/exports，使得主机ipa-server上的/home目录、/etc/hadoop目录和/etc/zookeeper目录共享给其他主机。</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>/home    192.168.2.0/24(rw,sync,no_root_squash)
+</span></span><span style=display:flex><span>/etc/hadoop    192.168.2.0/24(rw,sync,no_root_squash)
+</span></span><span style=display:flex><span>/etc/zookeeper 192.168.2.0/24(rw,sync,no_root_squash)
+</span></span></code></pre></div><ol start=3><li>创建 Hadoop 和 ZooKeeper 配置目录并设置属主属组</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mkdir /etc/hadoop
+</span></span><span style=display:flex><span>chown root:hadoop /etc/hadoop
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>755</span> /etc/hadoop
+</span></span><span style=display:flex><span>mkdir /etc/zookeeper
+</span></span><span style=display:flex><span>chown zookeeper:zookeeper /etc/zookeeper
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>755</span> /etc/zookeeper
+</span></span></code></pre></div><ol start=4><li>启动NFS服务</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>systemctl restart rpcbind
+</span></span><span style=display:flex><span>systemctl restart nfs-server
+</span></span><span style=display:flex><span>systemctl enable rpcbind
+</span></span><span style=display:flex><span>systemctl enable nfs-server
+</span></span></code></pre></div><ol start=5><li>在IPA Server上创建挂载配置</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ipa automountkey-add default auto.direct --key<span style=color:#f92672>=</span>/home --info<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;-fstype=nfs4,rw ipa-server:/home&#34;</span>
+</span></span><span style=display:flex><span>ipa automountkey-add default auto.direct --key<span style=color:#f92672>=</span>/etc/hadoop --info<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;-fstype=nfs4,rw ipa-server:/etc/hadoop&#34;</span>
+</span></span><span style=display:flex><span>ipa automountkey-add default auto.direct --key<span style=color:#f92672>=</span>/etc/zookeeper --info<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;-fstype=nfs4,rw ipa-server:/etc/zookeeper&#34;</span>
+</span></span></code></pre></div><hr><h2 id=安装hadoop和zookeeper>安装Hadoop和ZooKeeper</h2><blockquote><p>注意⚠️：下面的命令需要在主机machine1~machine5上执行。</p></blockquote><ol><li>关闭防火墙</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>systemctl stop firewalld
+</span></span><span style=display:flex><span>systemctl disable firewalld
+</span></span></code></pre></div><ol start=2><li>下载和解压</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>cd /opt
+</span></span><span style=display:flex><span>curl -O https://dlcdn.apache.org/zookeeper/zookeeper-3.7.1/apache-zookeeper-3.7.1-bin.tar.gz
+</span></span><span style=display:flex><span>tar -zxf apache-zookeeper-3.7.1-bin.tar.gz
+</span></span><span style=display:flex><span>curl -O https://dlcdn.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+</span></span><span style=display:flex><span>tar -zxf hadoop-3.3.6.tar.gz
+</span></span></code></pre></div><ol start=3><li>创建别名</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ln -s apache-zookeeper-3.7.1-bin zookeeper
+</span></span><span style=display:flex><span>ln -s hadoop-3.3.6 hadoop
+</span></span></code></pre></div><ol start=4><li>添加环境变量</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export ZOO_KEEPER_HOME=/opt/zookeeper&#39;</span> &gt;&gt; /etc/profile.d/zookeeper.sh
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export PATH=$PATH:$ZOO_KEEPER_HOME/bin&#39;</span> &gt;&gt; /etc/profile.d/zookeeper.sh
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export ZOOCFGDIR=/etc/zookeeper&#39;</span> &gt;&gt; /etc/profile.d/zookeeper.sh
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export ZOO_LOG_DIR=/var/log/zookeeper&#39;</span> &gt;&gt; /etc/profile.d/zookeeper.sh
+</span></span><span style=display:flex><span>source /etc/profile.d/zookeeper.sh
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export HADOOP_HOME=/opt/hadoop&#39;</span> &gt;&gt; /etc/profile.d/hadoop.sh
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin&#39;</span> &gt;&gt; /etc/profile.d/hadoop.sh
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export HADOOP_CONF_DIR=/etc/hadoop&#39;</span> &gt;&gt; /etc/profile.d/hadoop.sh
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export HADOOP_LOG_DIR=/var/log/hadoop&#39;</span> &gt;&gt; /etc/profile.d/hadoop.sh
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export HADOOP_OPTS=&#34;-Djava.security.auth.login.config=/etc/hadoop/jaas.conf&#34;&#39;</span> &gt;&gt; /etc/profile.d/hadoop.sh
+</span></span><span style=display:flex><span>source /etc/profile.d/hadoop.sh
+</span></span></code></pre></div><ol start=5><li>创建数据目录并设置属主属组</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>chown -R -H zookeeper:zookeeper $ZOO_KEEPER_HOME
+</span></span><span style=display:flex><span>mkdir /var/lib/zookeeper
+</span></span><span style=display:flex><span>chown zookeeper:zookeeper /var/lib/zookeeper
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>750</span> /var/lib/zookeeper
+</span></span><span style=display:flex><span>mkdir /var/log/zookeeper
+</span></span><span style=display:flex><span>chown zookeeper:zookeeper /var/log/zookeeper
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>755</span> /var/log/zookeeper
+</span></span><span style=display:flex><span>chown -R -H root:hadoop $HADOOP_HOME
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>755</span> $HADOOP_HOME
+</span></span><span style=display:flex><span>chown root:hadoop $HADOOP_HOME/bin/container-executor
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>6050</span> $HADOOP_HOME/bin/container-executor 
+</span></span><span style=display:flex><span>mkdir /var/lib/hadoop
+</span></span><span style=display:flex><span>chown root:hadoop /var/lib/hadoop
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>770</span> /var/lib/hadoop
+</span></span><span style=display:flex><span>mkdir /var/log/hadoop
+</span></span><span style=display:flex><span>chown hdfs:hadoop /var/log/hadoop
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>775</span> /var/log/hadoop
+</span></span></code></pre></div><ol start=6><li>创建 Hadoop 和 ZooKeeper 配置目录并设置属主属组</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mkdir /etc/hadoop
+</span></span><span style=display:flex><span>chown root:hadoop /etc/hadoop
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>755</span> /etc/hadoop
+</span></span><span style=display:flex><span>mkdir /etc/zookeeper
+</span></span><span style=display:flex><span>chown zookeeper:zookeeper /etc/zookeeper
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>755</span> /etc/zookeeper
+</span></span></code></pre></div><ol start=7><li>客户端挂载家目录、/etc/hadoop 和/etc/zookeeper 目录</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ipa-client-automount --location<span style=color:#f92672>=</span>default
+</span></span></code></pre></div><ol start=8><li>复制配置文件至共享目录</li></ol><blockquote><p>注意⚠️：下面的命令是在主机 machine1 上执行的，目的是把默认配置文件复制到共享目录中。</p></blockquote><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>cp -a -r /opt/hadoop/etc/hadoop/* /etc/hadoop
+</span></span><span style=display:flex><span>chown root:hadoop /etc/hadoop/container-executor.cfg
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>0400</span> /etc/hadoop/container-executor.cfg
+</span></span><span style=display:flex><span>cp -a -r /opt/zookeeper/conf/* /etc/zookeeper
+</span></span></code></pre></div><hr><h2 id=准备kerberos-principals和keytab-files>准备Kerberos principals和keytab files</h2><blockquote><p>注意⚠️：下面的命令是在主机ipa-server上执行的。</p></blockquote><ol><li>创建principal</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ipa service-add hdfs/machine1.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add HTTP/machine1.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add yarn/machine1.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add mapred/machine1.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add hdfs/machine2.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add HTTP/machine2.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add yarn/machine2.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add hdfs/machine3.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add HTTP/machine3.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add yarn/machine3.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add hdfs/machine4.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add HTTP/machine4.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add yarn/machine4.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add hdfs/machine5.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add HTTP/machine5.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add yarn/machine5.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add zookeeper/machine1.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add zookeeper/machine2.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add zookeeper/machine3.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add zookeeper/machine4.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add zookeeper/machine5.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span></code></pre></div><ol start=2><li>导出principal的密钥</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hdfs/machine1.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>HTTP/machine1.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hdfs/machine2.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>HTTP/machine2.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hdfs/machine3.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>HTTP/machine3.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hdfs/machine4.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>HTTP/machine4.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hdfs/machine5.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>HTTP/machine5.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>HTTP/machine1.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>yarn/machine1.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>HTTP/machine2.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>yarn/machine2.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>HTTP/machine3.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>yarn/machine3.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>HTTP/machine4.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>yarn/machine4.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>HTTP/machine5.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>yarn/machine5.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>mapred/machine1.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/mapred.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hdfs@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/hdfs.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>yarn@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/yarn.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>mapred@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hadoop/mapred.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>zookeeper/machine1.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/zookeeper/zookeeper.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>zookeeper/machine2.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/zookeeper/zookeeper.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>zookeeper/machine3.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/zookeeper/zookeeper.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>zookeeper/machine4.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/zookeeper/zookeeper.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>zookeeper/machine5.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/zookeeper/zookeeper.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>zookeeper@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/zookeeper/zookeeper.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span></code></pre></div><ol start=3><li>修改keytab的属主属组和权限</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>chown root:hadoop /etc/hadoop/*.keytab
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>640</span> /etc/hadoop/*.keytab
+</span></span><span style=display:flex><span>chown root:zookeeper /etc/zookeeper/*.keytab
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>640</span> /etc/zookeeper/*.keytab
+</span></span></code></pre></div><hr><h2 id=生成自签名-ssltls-证书>生成自签名 SSL/TLS 证书</h2><blockquote><p>注意⚠️：下面的命令是在主机ipa-server上执行的。</p></blockquote><ol><li>切换至 root 用户家目录</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>cd /root
+</span></span></code></pre></div><ol start=2><li>生成自签名证书</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>openssl req -newkey rsa:2048 -keyout domain1.key -x509 -days <span style=color:#ae81ff>365</span> -out domain1.crt -subj<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;/C=CN/ST=Jiangsu/L=Changzhou/CN=machine1.xuwangwei.test&#34;</span> -noenc
+</span></span><span style=display:flex><span>openssl req -newkey rsa:2048 -keyout domain2.key -x509 -days <span style=color:#ae81ff>365</span> -out domain2.crt -subj<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;/C=CN/ST=Jiangsu/L=Changzhou/CN=machine2.xuwangwei.test&#34;</span> -noenc
+</span></span><span style=display:flex><span>openssl req -newkey rsa:2048 -keyout domain3.key -x509 -days <span style=color:#ae81ff>365</span> -out domain3.crt -subj<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;/C=CN/ST=Jiangsu/L=Changzhou/CN=machine3.xuwangwei.test&#34;</span> -noenc
+</span></span><span style=display:flex><span>openssl req -newkey rsa:2048 -keyout domain4.key -x509 -days <span style=color:#ae81ff>365</span> -out domain4.crt -subj<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;/C=CN/ST=Jiangsu/L=Changzhou/CN=machine4.xuwangwei.test&#34;</span> -noenc
+</span></span><span style=display:flex><span>openssl req -newkey rsa:2048 -keyout domain5.key -x509 -days <span style=color:#ae81ff>365</span> -out domain5.crt -subj<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;/C=CN/ST=Jiangsu/L=Changzhou/CN=machine5.xuwangwei.test&#34;</span> -noenc
+</span></span></code></pre></div><ol start=2><li>转化成 PKCS12 格式</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>openssl pkcs12 -inkey domain1.key -in domain1.crt -export -out domain1.p12 -password pass:xuwangwei3306
+</span></span><span style=display:flex><span>openssl pkcs12 -inkey domain2.key -in domain2.crt -export -out domain2.p12 -password pass:xuwangwei3306
+</span></span><span style=display:flex><span>openssl pkcs12 -inkey domain3.key -in domain3.crt -export -out domain3.p12 -password pass:xuwangwei3306
+</span></span><span style=display:flex><span>openssl pkcs12 -inkey domain4.key -in domain4.crt -export -out domain4.p12 -password pass:xuwangwei3306
+</span></span><span style=display:flex><span>openssl pkcs12 -inkey domain5.key -in domain5.crt -export -out domain5.p12 -password pass:xuwangwei3306
+</span></span></code></pre></div><ol start=3><li>通过keytool把 5 个证书和对应私钥全部导入hadoop.p12</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>keytool -importkeystore -srckeystore domain1.p12 -srcstoretype pkcs12 -srcstorepass xuwangwei3306 -srcalias <span style=color:#ae81ff>1</span> -destkeystore hadoop.p12 -deststoretype pkcs12 -deststorepass xuwangwei3306 -destalias m1
+</span></span><span style=display:flex><span>keytool -importkeystore -srckeystore domain2.p12 -srcstoretype pkcs12 -srcstorepass xuwangwei3306 -srcalias <span style=color:#ae81ff>1</span> -destkeystore hadoop.p12 -deststoretype pkcs12 -deststorepass xuwangwei3306 -destalias m2
+</span></span><span style=display:flex><span>keytool -importkeystore -srckeystore domain3.p12 -srcstoretype pkcs12 -srcstorepass xuwangwei3306 -srcalias <span style=color:#ae81ff>1</span> -destkeystore hadoop.p12 -deststoretype pkcs12 -deststorepass xuwangwei3306 -destalias m3
+</span></span><span style=display:flex><span>keytool -importkeystore -srckeystore domain4.p12 -srcstoretype pkcs12 -srcstorepass xuwangwei3306 -srcalias <span style=color:#ae81ff>1</span> -destkeystore hadoop.p12 -deststoretype pkcs12 -deststorepass xuwangwei3306 -destalias m4
+</span></span><span style=display:flex><span>keytool -importkeystore -srckeystore domain5.p12 -srcstoretype pkcs12 -srcstorepass xuwangwei3306 -srcalias <span style=color:#ae81ff>1</span> -destkeystore hadoop.p12 -deststoretype pkcs12 -deststorepass xuwangwei3306 -destalias m5
+</span></span></code></pre></div><ol start=4><li>复制到配置目录</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>cp hadoop.p12 /etc/hadoop/
+</span></span><span style=display:flex><span>chown root:hadoop /etc/hadoop/hadoop.p12
+</span></span></code></pre></div><hr><h2 id=配置hadoop>配置Hadoop</h2><blockquote><p>注意⚠️：下面的命令只需在主机machine1上执行。</p></blockquote><ol><li>修改配置文件$HADOOP_CONF_DIR/core-site.xml</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-xml data-lang=xml><span style=display:flex><span><span style=color:#75715e>&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!--
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  you may not use this file except in compliance with the License.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  You may obtain a copy of the License at
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>    http://www.apache.org/licenses/LICENSE-2.0
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  Unless required by applicable law or agreed to in writing, software
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  See the License for the specific language governing permissions and
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  limitations under the License. See accompanying LICENSE file.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>--&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!-- Put site-specific property overrides in this file. --&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;configuration&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>fs.defaultFS<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>hdfs://xuwangwei<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.tmp.dir<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/var/lib/hadoop<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.zk.address<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine1.xuwangwei.test:2181,machine2.xuwangwei.test:2181,machine3.xuwangwei.test:2181,machine4.xuwangwei.test:2181,machine5.xuwangwei.test:2181<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>ha.zookeeper.quorum<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine1.xuwangwei.test:2181,machine2.xuwangwei.test:2181,machine3.xuwangwei.test:2181,machine4.xuwangwei.test:2181,machine5.xuwangwei.test:2181<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.security.authentication<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>kerberos<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;/configuration&gt;</span>
+</span></span></code></pre></div><ol start=2><li>修改配置文件$HADOOP_CONF_DIR/hdfs-site.xml</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-xml data-lang=xml><span style=display:flex><span><span style=color:#75715e>&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!--
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  you may not use this file except in compliance with the License.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  You may obtain a copy of the License at
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>    http://www.apache.org/licenses/LICENSE-2.0
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  Unless required by applicable law or agreed to in writing, software
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  See the License for the specific language governing permissions and
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  limitations under the License. See accompanying LICENSE file.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>--&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!-- Put site-specific property overrides in this file. --&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;configuration&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.nameservices<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>xuwangwei<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.ha.namenodes.xuwangwei<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>nn1,nn2,nn3<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.namenode.rpc-address.xuwangwei.nn1<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine1.xuwangwei.test:8020<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.namenode.rpc-address.xuwangwei.nn2<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine2.xuwangwei.test:8020<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.namenode.rpc-address.xuwangwei.nn3<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine3.xuwangwei.test:8020<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.namenode.http-address.xuwangwei.nn1<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine1.xuwangwei.test:9870<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.namenode.http-address.xuwangwei.nn2<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine2.xuwangwei.test:9870<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.namenode.http-address.xuwangwei.nn3<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine3.xuwangwei.test:9870<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.client.failover.proxy.provider.xuwangwei<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.ha.fencing.methods<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>sshfence<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.ha.fencing.ssh.private-key-files<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/home/hdfs/.ssh/id_rsa<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.namenode.shared.edits.dir<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>qjournal://machine1.xuwangwei.test:8485;machine2.xuwangwei.test:8485;machine3.xuwangwei.test:8485/xuwangwei<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.journalnode.edits.dir<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>${hadoop.tmp.dir}/dfs/journalnode/<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.ha.nn.not-become-active-in-safemode<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>true<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.ha.automatic-failover.enabled<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>true<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>&lt;!-- start for kerberos --&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.block.access.token.enable<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>true<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.namenode.keytab.file<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/hdfs.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.namenode.kerberos.principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>hdfs/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.namenode.kerberos.internal.spnego.principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>HTTP/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.journalnode.keytab.file<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/hdfs.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.journalnode.kerberos.principal <span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>hdfs/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.journalnode.kerberos.internal.spnego.principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>HTTP/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.data.transfer.protection<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>authentication<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.http.policy<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>HTTPS_ONLY<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.datanode.keytab.file<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/hdfs.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.datanode.kerberos.principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>hdfs/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.web.authentication.kerberos.keytab<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/hdfs.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>dfs.web.authentication.kerberos.principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>HTTP/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>&lt;!-- end for kerberos --&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;/configuration&gt;</span>
+</span></span></code></pre></div><ol start=3><li>修改配置文件$HADOOP_CONF_DIR/yarn-site.xml</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-xml data-lang=xml><span style=display:flex><span><span style=color:#75715e>&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!--
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  you may not use this file except in compliance with the License.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  You may obtain a copy of the License at
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>    http://www.apache.org/licenses/LICENSE-2.0
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  Unless required by applicable law or agreed to in writing, software
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  See the License for the specific language governing permissions and
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  limitations under the License. See accompanying LICENSE file.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>--&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;configuration&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.nodemanager.aux-services<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>mapreduce_shuffle<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.nodemanager.env-whitelist<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.resourcemanager.ha.enabled<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>true<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.resourcemanager.cluster-id<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>xuwangwei<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.resourcemanager.ha.rm-ids<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>rm1,rm2<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.resourcemanager.hostname.rm1<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine4.xuwangwei.test<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.resourcemanager.hostname.rm2<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine5.xuwangwei.test<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>&lt;!-- start for kerberos --&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.resourcemanager.principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>yarn/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.resourcemanager.webapp.spnego-principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>HTTP/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.resourcemanager.keytab<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/yarn.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.resourcemanager.webapp.spnego-keytab-file<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/yarn.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.nodemanager.principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>yarn/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.nodemanager.webapp.spnego-principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>HTTP/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.nodemanager.keytab<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/yarn.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.nodemanager.webapp.spnego-keytab-file<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/yarn.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>&lt;!-- end for kerberos --&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.nodemanager.container-executor.class<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>yarn.nodemanager.linux-container-executor.group<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>hadoop<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;/configuration&gt;</span>
+</span></span></code></pre></div><ol start=4><li>修改配置文件$HADOOP_CONF_DIR/container-executor.cfg</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>yarn.nodemanager.linux-container-executor.group=hadoop
+</span></span><span style=display:flex><span>banned.users=root
+</span></span><span style=display:flex><span>#allowed.system.users=
+</span></span><span style=display:flex><span>min.user.id=1000
+</span></span></code></pre></div><ol start=5><li>修改配置文件$HADOOP_CONF_DIR/mapred-site.xml</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-xml data-lang=xml><span style=display:flex><span><span style=color:#75715e>&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!--
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  you may not use this file except in compliance with the License.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  You may obtain a copy of the License at
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>    http://www.apache.org/licenses/LICENSE-2.0
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  Unless required by applicable law or agreed to in writing, software
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  See the License for the specific language governing permissions and
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  limitations under the License. See accompanying LICENSE file.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>--&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!-- Put site-specific property overrides in this file. --&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;configuration&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>mapreduce.framework.name<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>yarn<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>mapreduce.jobhistory.address<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine1.xuwangwei.test:10020<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>mapreduce.jobhistory.webapp.address<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine1.xuwangwei.test:19888<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>&lt;!-- start for kerberos --&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>mapreduce.jobhistory.principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>mapred/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>mapreduce.jobhistory.keytab<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/mapred.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>&lt;!-- end for kerberos --&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;/configuration&gt;</span>
+</span></span></code></pre></div><ol start=6><li>修改配置文件$HADOOP_CONF_DIR/workers</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>machine1
+</span></span><span style=display:flex><span>machine2
+</span></span><span style=display:flex><span>machine3
+</span></span><span style=display:flex><span>machine4
+</span></span><span style=display:flex><span>machine5
+</span></span></code></pre></div><ol start=7><li>创建配置文件 ssl-client.xml</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-xml data-lang=xml><span style=display:flex><span><span style=color:#75715e>&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!--
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   Licensed to the Apache Software Foundation (ASF) under one or more
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   contributor license agreements.  See the NOTICE file distributed with
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   this work for additional information regarding copyright ownership.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   The ASF licenses this file to You under the Apache License, Version 2.0
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   (the &#34;License&#34;); you may not use this file except in compliance with
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   the License.  You may obtain a copy of the License at
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>       http://www.apache.org/licenses/LICENSE-2.0
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   Unless required by applicable law or agreed to in writing, software
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   See the License for the specific language governing permissions and
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   limitations under the License.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>--&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;configuration&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.client.truststore.location<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/hadoop.p12<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Truststore to be used by clients like distcp. Must be
+</span></span><span style=display:flex><span>            specified.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.client.truststore.password<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>xuwangwei3306<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Optional. Default value is &#34;&#34;.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.client.truststore.type<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>pkcs12<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Optional. The keystore file format, default value is &#34;jks&#34;.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.client.truststore.reload.interval<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>10000<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Truststore reload check interval, in milliseconds.
+</span></span><span style=display:flex><span>            Default value is 10000 (10 seconds).
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.client.keystore.location<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/hadoop.p12<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Keystore to be used by clients like distcp. Must be
+</span></span><span style=display:flex><span>            specified.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.client.keystore.password<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>xuwangwei3306<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Optional. Default value is &#34;&#34;.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.client.keystore.keypassword<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>xuwangwei3306<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Optional. Default value is &#34;&#34;.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.client.keystore.type<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>pkcs12<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Optional. The keystore file format, default value is &#34;jks&#34;.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;/configuration&gt;</span>
+</span></span></code></pre></div><ol start=8><li>创建配置文件 ssl-server.xml</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-xml data-lang=xml><span style=display:flex><span><span style=color:#75715e>&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!--
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   Licensed to the Apache Software Foundation (ASF) under one or more
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   contributor license agreements.  See the NOTICE file distributed with
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   this work for additional information regarding copyright ownership.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   The ASF licenses this file to You under the Apache License, Version 2.0
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   (the &#34;License&#34;); you may not use this file except in compliance with
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   the License.  You may obtain a copy of the License at
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>       http://www.apache.org/licenses/LICENSE-2.0
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   Unless required by applicable law or agreed to in writing, software
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   See the License for the specific language governing permissions and
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   limitations under the License.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>--&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;configuration&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.server.truststore.location<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/hadoop.p12<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Truststore to be used by NN and DN. Must be specified.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.server.truststore.password<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>xuwangwei3306<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Optional. Default value is &#34;&#34;.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.server.truststore.type<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>pkcs12<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Optional. The keystore file format, default value is &#34;jks&#34;.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.server.truststore.reload.interval<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>10000<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Truststore reload check interval, in milliseconds.
+</span></span><span style=display:flex><span>            Default value is 10000 (10 seconds).
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.server.keystore.location<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>/etc/hadoop/hadoop.p12<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Keystore to be used by NN and DN. Must be specified.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.server.keystore.password<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>xuwangwei3306<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Must be specified.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.server.keystore.keypassword<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>xuwangwei3306<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Must be specified.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.server.keystore.type<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>pkcs12<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Optional. The keystore file format, default value is &#34;jks&#34;.
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;name&gt;</span>ssl.server.exclude.cipher.list<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;value&gt;</span>TLS_ECDHE_RSA_WITH_RC4_128_SHA,SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA,
+</span></span><span style=display:flex><span>            SSL_RSA_WITH_DES_CBC_SHA,SSL_DHE_RSA_WITH_DES_CBC_SHA,
+</span></span><span style=display:flex><span>            SSL_RSA_EXPORT_WITH_RC4_40_MD5,SSL_RSA_EXPORT_WITH_DES40_CBC_SHA,
+</span></span><span style=display:flex><span>            SSL_RSA_WITH_RC4_128_MD5<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>&lt;description&gt;</span>Optional. The weak security cipher suites that you want excluded
+</span></span><span style=display:flex><span>            from SSL communication.<span style=color:#f92672>&lt;/description&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;/configuration&gt;</span>
+</span></span></code></pre></div><ol start=9><li>创建配置文件 jaas.conf</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>Client {
+</span></span><span style=display:flex><span>       com.sun.security.auth.module.Krb5LoginModule required
+</span></span><span style=display:flex><span>       useKeyTab=true
+</span></span><span style=display:flex><span>       keyTab=&#34;/etc/hadoop/hdfs.keytab&#34;
+</span></span><span style=display:flex><span>       storeKey=true
+</span></span><span style=display:flex><span>       useTicketCache=false
+</span></span><span style=display:flex><span>       principal=&#34;hdfs&#34;;
+</span></span><span style=display:flex><span>};
+</span></span></code></pre></div><hr><h2 id=配置zookeeper>配置ZooKeeper</h2><blockquote><p>注意⚠️：下面的命令只需在主机machine1上执行。</p></blockquote><ol><li>创建配置文件$ZOOCFGDIR/zoo.cfg</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mv $ZOOCFGDIR/zoo_sample.cfg $ZOOCFGDIR/zoo.cfg
+</span></span></code></pre></div><ol start=2><li>修改配置文件$ZOOCFGDIR/zoo.cfg</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span># The number of milliseconds of each tick
+</span></span><span style=display:flex><span>tickTime=2000
+</span></span><span style=display:flex><span># The number of ticks that the initial 
+</span></span><span style=display:flex><span># synchronization phase can take
+</span></span><span style=display:flex><span>initLimit=10
+</span></span><span style=display:flex><span># The number of ticks that can pass between 
+</span></span><span style=display:flex><span># sending a request and getting an acknowledgement
+</span></span><span style=display:flex><span>syncLimit=5
+</span></span><span style=display:flex><span># the directory where the snapshot is stored.
+</span></span><span style=display:flex><span># do not use /tmp for storage, /tmp here is just 
+</span></span><span style=display:flex><span># example sakes.
+</span></span><span style=display:flex><span>dataDir=/var/lib/zookeeper
+</span></span><span style=display:flex><span># the port at which the clients will connect
+</span></span><span style=display:flex><span>clientPort=2181
+</span></span><span style=display:flex><span># the maximum number of client connections.
+</span></span><span style=display:flex><span># increase this if you need to handle more clients
+</span></span><span style=display:flex><span>#maxClientCnxns=60
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># Be sure to read the maintenance section of the 
+</span></span><span style=display:flex><span># administrator guide before turning on autopurge.
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_maintenance
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># The number of snapshots to retain in dataDir
+</span></span><span style=display:flex><span>#autopurge.snapRetainCount=3
+</span></span><span style=display:flex><span># Purge task interval in hours
+</span></span><span style=display:flex><span># Set to &#34;0&#34; to disable auto purge feature
+</span></span><span style=display:flex><span>#autopurge.purgeInterval=1
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>## Metrics Providers
+</span></span><span style=display:flex><span>#
+</span></span><span style=display:flex><span># https://prometheus.io Metrics Exporter
+</span></span><span style=display:flex><span>#metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider
+</span></span><span style=display:flex><span>#metricsProvider.httpPort=7000
+</span></span><span style=display:flex><span>#metricsProvider.exportJvmInfo=true
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>server.1=machine1.xuwangwei.test:2888:3888
+</span></span><span style=display:flex><span>server.2=machine2.xuwangwei.test:2888:3888
+</span></span><span style=display:flex><span>server.3=machine3.xuwangwei.test:2888:3888
+</span></span><span style=display:flex><span>server.4=machine4.xuwangwei.test:2888:3888
+</span></span><span style=display:flex><span>server.5=machine5.xuwangwei.test:2888:3888
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>enforce.auth.enabled=true
+</span></span><span style=display:flex><span>enforce.auth.schemes=sasl
+</span></span><span style=display:flex><span>authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider 
+</span></span><span style=display:flex><span># optional SASL related server-side properties:
+</span></span><span style=display:flex><span># you can instruct ZooKeeper to remove the host from the client principal name during authentication
+</span></span><span style=display:flex><span># (e.g. zk/myhost@EXAMPLE.COM client principal will be authenticated in ZooKeeper as zk@EXAMPLE.COM)
+</span></span><span style=display:flex><span># kerberos.removeHostFromPrincipal=true
+</span></span><span style=display:flex><span># you can instruct ZooKeeper to remove the realm from the client principal name during authentication
+</span></span><span style=display:flex><span># (e.g. zk/myhost@EXAMPLE.COM client principal will be authenticated in ZooKeeper as zk/myhost)
+</span></span><span style=display:flex><span># kerberos.removeRealmFromPrincipal=true
+</span></span></code></pre></div><ol start=3><li>创建配置文件/etc/zookeeper_no_share/jaas.conf，由于该配置文件无法配置 zookeeper/_HOST 这种统一的服务 principal，所以这个配置无法共享，单独放在了一个目录下。每台机器上的此配置都要修改 Server 下 principal。</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>Server {
+</span></span><span style=display:flex><span>       com.sun.security.auth.module.Krb5LoginModule required
+</span></span><span style=display:flex><span>       useKeyTab=true
+</span></span><span style=display:flex><span>       keyTab=&#34;/etc/zookeeper/zookeeper.keytab&#34;
+</span></span><span style=display:flex><span>       storeKey=true
+</span></span><span style=display:flex><span>       useTicketCache=false
+</span></span><span style=display:flex><span>       principal=&#34;zookeeper/machine1.xuwangwei.test&#34;;
+</span></span><span style=display:flex><span>};
+</span></span><span style=display:flex><span>Client {
+</span></span><span style=display:flex><span>       com.sun.security.auth.module.Krb5LoginModule required
+</span></span><span style=display:flex><span>       useKeyTab=true
+</span></span><span style=display:flex><span>       keyTab=&#34;/etc/zookeeper/zookeeper.keytab&#34;
+</span></span><span style=display:flex><span>       storeKey=true
+</span></span><span style=display:flex><span>       useTicketCache=false
+</span></span><span style=display:flex><span>       principal=&#34;zookeeper&#34;;
+</span></span><span style=display:flex><span>};
+</span></span></code></pre></div><ol start=4><li>创建配置文件$ZOOCFGDIR/java.env</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>SERVER_JVMFLAGS<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;</span><span style=color:#e6db74>${</span>SERVER_JVMFLAGS<span style=color:#e6db74>}</span><span style=color:#e6db74> -Djava.security.auth.login.config=/etc/zookeeper_no_share/jaas.conf&#34;</span>
+</span></span><span style=display:flex><span>CLIENT_JVMFLAGS<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;</span><span style=color:#e6db74>${</span>CLIENT_JVMFLAGS<span style=color:#e6db74>}</span><span style=color:#e6db74> -Djava.security.auth.login.config=/etc/zookeeper_no_share/jaas.conf&#34;</span>
+</span></span></code></pre></div><ol start=5><li>在数据目录（即zoo.cfg中配置的dataDir）下创建myid文件和initialize空文件，myid文件内容是本实例在集群中的id。</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - zookeeper
+</span></span><span style=display:flex><span>ssh machine1 <span style=color:#e6db74>&#39;echo 1 &gt; /var/lib/zookeeper/myid;touch /var/lib/zookeeper/initialize&#39;</span>
+</span></span><span style=display:flex><span>ssh machine2 <span style=color:#e6db74>&#39;echo 2 &gt; /var/lib/zookeeper/myid;touch /var/lib/zookeeper/initialize&#39;</span>
+</span></span><span style=display:flex><span>ssh machine3 <span style=color:#e6db74>&#39;echo 3 &gt; /var/lib/zookeeper/myid;touch /var/lib/zookeeper/initialize&#39;</span>
+</span></span><span style=display:flex><span>ssh machine4 <span style=color:#e6db74>&#39;echo 4 &gt; /var/lib/zookeeper/myid;touch /var/lib/zookeeper/initialize&#39;</span>
+</span></span><span style=display:flex><span>ssh machine5 <span style=color:#e6db74>&#39;echo 5 &gt; /var/lib/zookeeper/myid;touch /var/lib/zookeeper/initialize&#39;</span>
+</span></span><span style=display:flex><span>exit
+</span></span></code></pre></div><hr><h2 id=启动zookeeper>启动ZooKeeper</h2><blockquote><p>注意⚠️：下面的命令只需在主机machine1上执行。</p></blockquote><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - zookeeper
+</span></span><span style=display:flex><span>ssh machine1 <span style=color:#e6db74>&#39;zkServer.sh start&#39;</span>
+</span></span><span style=display:flex><span>ssh machine2 <span style=color:#e6db74>&#39;zkServer.sh start&#39;</span>
+</span></span><span style=display:flex><span>ssh machine3 <span style=color:#e6db74>&#39;zkServer.sh start&#39;</span>
+</span></span><span style=display:flex><span>ssh machine4 <span style=color:#e6db74>&#39;zkServer.sh start&#39;</span>
+</span></span><span style=display:flex><span>ssh machine5 <span style=color:#e6db74>&#39;zkServer.sh start&#39;</span>
+</span></span><span style=display:flex><span>exit
+</span></span></code></pre></div><hr><h2 id=启动hadoop>启动Hadoop</h2><blockquote><p>注意⚠️：下面的命令只需在主机machine1上执行。</p></blockquote><ol><li>启动 HDFS</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;ssh machine1 &#39;hdfs --daemon start journalnode&#39;&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;ssh machine2 &#39;hdfs --daemon start journalnode&#39;&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;ssh machine3 &#39;hdfs --daemon start journalnode&#39;&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;hdfs namenode -format&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;hdfs zkfc -formatZK&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;start-dfs.sh&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;ssh machine2 &#39;hdfs namenode -bootstrapStandby&#39;&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;ssh machine3 &#39;hdfs namenode -bootstrapStandby&#39;&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;stop-dfs.sh;start-dfs.sh&#34;</span>
+</span></span></code></pre></div><ol start=2><li>修改用户 hdfs 的环境变量</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export KRB5CCNAME=FILE:/tmp/krb5cc_%{uid}&#39;</span> &gt;&gt; ~hdfs/.bashrc
+</span></span></code></pre></div><p>hadoop 命令不支持 FreeIPA 安装后的<code>default_ccache_name</code>配置项（KCM），所以我通过改变 hdfs 用户的环境变量，使得 hdfs 用户使用 kinit 命令进行 Kerberos 身份认证时，使用/tmp/krb5cc_%{uid}的 credential cache。</p><ol start=3><li>使用 hdfs@XUWANGWEI@TEST 帐号进行 Kerberos 认证</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;kinit -kt /etc/hadoop/hdfs.keytab hdfs&#34;</span>
+</span></span></code></pre></div><ol start=4><li>初始化目录</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;hadoop fs -chown hdfs:hadoop /&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;hadoop fs -mkdir /tmp /user&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;hadoop fs -chmod 1777 /tmp&#34;</span>
+</span></span></code></pre></div><ol start=5><li>启动 YARN</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - yarn -c <span style=color:#e6db74>&#34;start-yarn.sh&#34;</span>
+</span></span></code></pre></div><ol start=6><li>启动 MapReduce</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - mapred -c <span style=color:#e6db74>&#34;mapred --daemon start historyserver&#34;</span>
+</span></span></code></pre></div></div><div class="row middle-xs"><div class=col-xs-12></div></div><div class=row><div class=col-xs-12></div></div><div style=height:50px></div><div class=site-footer></div></div></div></article><script></script></body></html>
