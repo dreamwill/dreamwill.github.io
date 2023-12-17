@@ -11,6 +11,7 @@ draft: false
 - [x] HDFS 由 3 个 NameNode、5 个 DataNode 组成高可用（High Availability）集群。
 - [x] MapReduce 由 1 个 JobHistory Server 组成。
 - [x] YARN 由 2 个 ResourceManager、5 个 NodeManager 组成高可用集群。
+- [x] Hadoop 版本是 3.3.6，ZooKeeper 版本是 3.7.1。
 
 ---
 
@@ -19,7 +20,7 @@ draft: false
 - [x] 已安装JDK 8。
 - [x] 已安装 FreeIPA。可以参考[安装 FreeIPA(Rocky Linux 9.2)](../安装freeiparockylinux-9.2/)。
 - [x] 已编译 container-executor。可以参考[安装 Hadoop 过程中遇到的问题与解决方案](../安装hadoop过程中遇到的问题与解决方案/)。
-- [x] 已编译 openssl-1.1.1。可以参考[安装 Hadoop 过程中遇到的问题与解决方案](../安装hadoop过程中遇到的问题与解决方案/)。
+- [x] 已安装 openssl-1.1.1。可以参考[安装 Hadoop 过程中遇到的问题与解决方案](../安装hadoop过程中遇到的问题与解决方案/)。
 
 ---
 
