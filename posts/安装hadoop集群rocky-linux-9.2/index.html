@@ -711,10 +711,10 @@ Hadoop 集群启用 Kerberos 认证。 HDFS 由 3 个 NameNode、5 个 DataNode 
 </span></span><span style=display:flex><span># optional SASL related server-side properties:
 </span></span><span style=display:flex><span># you can instruct ZooKeeper to remove the host from the client principal name during authentication
 </span></span><span style=display:flex><span># (e.g. zk/myhost@EXAMPLE.COM client principal will be authenticated in ZooKeeper as zk@EXAMPLE.COM)
-</span></span><span style=display:flex><span># kerberos.removeHostFromPrincipal=true
+</span></span><span style=display:flex><span>kerberos.removeHostFromPrincipal=true
 </span></span><span style=display:flex><span># you can instruct ZooKeeper to remove the realm from the client principal name during authentication
 </span></span><span style=display:flex><span># (e.g. zk/myhost@EXAMPLE.COM client principal will be authenticated in ZooKeeper as zk/myhost)
-</span></span><span style=display:flex><span># kerberos.removeRealmFromPrincipal=true
+</span></span><span style=display:flex><span>kerberos.removeRealmFromPrincipal=true
 </span></span></code></pre></div><ol start=3><li>创建配置文件/etc/zookeeper_no_share/jaas.conf，由于该配置文件无法配置 zookeeper/_HOST 这种统一的服务 principal，所以这个配置无法共享，单独放在了一个目录下。每台机器上的此配置都要修改 Server 下 principal。</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>Server {
 </span></span><span style=display:flex><span>       com.sun.security.auth.module.Krb5LoginModule required
 </span></span><span style=display:flex><span>       useKeyTab=true
