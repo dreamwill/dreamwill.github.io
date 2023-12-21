@@ -943,10 +943,10 @@ authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
 # optional SASL related server-side properties:
 # you can instruct ZooKeeper to remove the host from the client principal name during authentication
 # (e.g. zk/myhost@EXAMPLE.COM client principal will be authenticated in ZooKeeper as zk@EXAMPLE.COM)
-# kerberos.removeHostFromPrincipal=true
+kerberos.removeHostFromPrincipal=true
 # you can instruct ZooKeeper to remove the realm from the client principal name during authentication
 # (e.g. zk/myhost@EXAMPLE.COM client principal will be authenticated in ZooKeeper as zk/myhost)
-# kerberos.removeRealmFromPrincipal=true
+kerberos.removeRealmFromPrincipal=true
 ```
 
 3. 创建配置文件/etc/zookeeper_no_share/jaas.conf，由于该配置文件无法配置 zookeeper/_HOST 这种统一的服务 principal，所以这个配置无法共享，单独放在了一个目录下。每台机器上的此配置都要修改 Server 下 principal。
