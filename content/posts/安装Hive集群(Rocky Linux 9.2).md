@@ -147,6 +147,7 @@ chown hive:hadoop /etc/hive/*.keytab
 chmod 640 /etc/hive/*.keytab
 ```
 ## 配置 Hive
+> 注意⚠️：下面的命令是在主机 machine1 上执行的。
 
 1. 在MySQL数据库中创建用户hive，创建数据库metastore_db。这些信息会放在配置文件hive-site.xml中。
 ```console
@@ -402,7 +403,7 @@ Provider jceks://file/etc/hive/hive.jceks was updated.
 </configuration>
 ```
 
-5. 使用 hdfs@XUWANGWEI@TEST 帐号进行 Kerberos 认证
+5. 使用 hdfs@XUWANGWEI.TEST 帐号进行 Kerberos 认证
 ```bash
 su - hdfs -c "kinit -kt /etc/hadoop/hdfs.keytab hdfs"
 ```
@@ -447,7 +448,7 @@ su - hive -c "ssh machine5 'nohup hive --service hiveserver2 1>/dev/null 2>&1 &'
 echo 'export KRB5CCNAME=FILE:/tmp/krb5cc_$UID' >> ~hive/.bashrc
 ```
 
-2. 使用 hive@XUWANGWEI@TEST 帐号进行 Kerberos 认证
+2. 使用 hive@XUWANGWEI.TEST 帐号进行 Kerberos 认证
 ```bash
 su - hive -c "kinit -kt /etc/hive/hive.keytab hive"
 ```
