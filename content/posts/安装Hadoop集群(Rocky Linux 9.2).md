@@ -1025,7 +1025,7 @@ echo 'export KRB5CCNAME=FILE:/tmp/krb5cc_$UID' >> ~hdfs/.bashrc
 ```
 hadoop 命令不支持 FreeIPA 安装后的`default_ccache_name`配置项（KCM），所以我通过改变 hdfs 用户的环境变量，使得 hdfs 用户使用 kinit 命令进行 Kerberos 身份认证时，使用/tmp/krb5cc_$UID的 credential cache。
 
-3. 使用 hdfs@XUWANGWEI@TEST 帐号进行 Kerberos 认证
+3. 使用 hdfs@XUWANGWEI.TEST 帐号进行 Kerberos 认证
 ```bash
 su - hdfs -c "kinit -kt /etc/hadoop/hdfs.keytab hdfs"
 ```
