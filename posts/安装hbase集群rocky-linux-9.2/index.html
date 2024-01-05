@@ -1,0 +1,427 @@
+<!doctype html><html lang=en><head><meta charset=utf-8><meta name=generator content="Hugo 0.119.0"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="许王伟"><meta property="og:url" content="https://dreamwill.github.io/posts/%E5%AE%89%E8%A3%85hbase%E9%9B%86%E7%BE%A4rocky-linux-9.2/"><link rel=canonical href=https://dreamwill.github.io/posts/%E5%AE%89%E8%A3%85hbase%E9%9B%86%E7%BE%A4rocky-linux-9.2/><link rel=apple-touch-icon href=/images/favicon.ico><link rel=icon href=/images/favicon.ico><link rel=shortcut href=/images/favicon.ico><link rel=alternate type=application/atom+xml href=https://dreamwill.github.io/index.xml title=王伟的个人博客><script type=application/ld+json>{"@context":"http://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/dreamwill.github.io\/"},"articleSection":"posts","name":"安装 HBase 集群(Rocky Linux 9.2)","headline":"安装 HBase 集群(Rocky Linux 9.2)","description":"安装目标：\nHBase 集群启用 Kerberos 认证。 HBase 由 2 个 Master 和 3 个 RegionServer 组成集群。 HBase 的版本是 2.5.7。 前置条件：\n已按照安装 Hadoop 集群(Rocky Linux 9.2)安装 Hadoop。 准备用户 注意⚠️：下面的命令是在主机 ipa-server 上执行的。\n身份认证 [root@ipa-server ~]# kinit admin Password for admin@XUWANGWEI.TEST: 新增用户 hbase ipa user-add hbase --first=hbase --last=hadoop --shell=\/bin\/bash --gidnumber=1532600004 su - hbase ssh-keygen -t rsa -P \u0026#39;\u0026#39; -f ~\/.ssh\/id_rsa cat ~\/.ssh\/id_rsa.pub \u0026gt;\u0026gt; ~\/.ssh\/authorized_keys chmod 0600 ~\/.ssh\/authorized_keys exit ipa user-mod hbase --sshpubkey=\u0026#34;$( cat ~hbase\/.ssh\/id_rsa.pub )\u0026#34; 共享 HBase 配置目录 注意⚠️：下面的命令是在主机 ipa-server 上执行的。","inLanguage":"en-US","author":"许王伟","creator":"许王伟","publisher":"许王伟","accountablePerson":"许王伟","copyrightHolder":"许王伟","copyrightYear":"2024","datePublished":"2024-01-05 00:00:00 \u002b0000 UTC","dateModified":"2024-01-05 00:00:00 \u002b0000 UTC","url":"https:\/\/dreamwill.github.io\/posts\/%E5%AE%89%E8%A3%85hbase%E9%9B%86%E7%BE%A4rocky-linux-9.2\/","keywords":[]}</script><title>安装 HBase 集群(Rocky Linux 9.2)</title><meta property="og:title" content="安装 HBase 集群(Rocky Linux 9.2)"><meta property="og:type" content="article"><meta property="og:description" content="安装目标：
+HBase 集群启用 Kerberos 认证。 HBase 由 2 个 Master 和 3 个 RegionServer 组成集群。 HBase 的版本是 2.5.7。 前置条件：
+已按照安装 Hadoop 集群(Rocky Linux 9.2)安装 Hadoop。 准备用户 注意⚠️：下面的命令是在主机 ipa-server 上执行的。
+身份认证 [root@ipa-server ~]# kinit admin Password for admin@XUWANGWEI.TEST: 新增用户 hbase ipa user-add hbase --first=hbase --last=hadoop --shell=/bin/bash --gidnumber=1532600004 su - hbase ssh-keygen -t rsa -P &amp;#39;&amp;#39; -f ~/.ssh/id_rsa cat ~/.ssh/id_rsa.pub &amp;gt;&amp;gt; ~/.ssh/authorized_keys chmod 0600 ~/.ssh/authorized_keys exit ipa user-mod hbase --sshpubkey=&amp;#34;$( cat ~hbase/.ssh/id_rsa.pub )&amp;#34; 共享 HBase 配置目录 注意⚠️：下面的命令是在主机 ipa-server 上执行的。"><meta name=description content="安装目标：
+HBase 集群启用 Kerberos 认证。 HBase 由 2 个 Master 和 3 个 RegionServer 组成集群。 HBase 的版本是 2.5.7。 前置条件：
+已按照安装 Hadoop 集群(Rocky Linux 9.2)安装 Hadoop。 准备用户 注意⚠️：下面的命令是在主机 ipa-server 上执行的。
+身份认证 [root@ipa-server ~]# kinit admin Password for admin@XUWANGWEI.TEST: 新增用户 hbase ipa user-add hbase --first=hbase --last=hadoop --shell=/bin/bash --gidnumber=1532600004 su - hbase ssh-keygen -t rsa -P &amp;#39;&amp;#39; -f ~/.ssh/id_rsa cat ~/.ssh/id_rsa.pub &amp;gt;&amp;gt; ~/.ssh/authorized_keys chmod 0600 ~/.ssh/authorized_keys exit ipa user-mod hbase --sshpubkey=&amp;#34;$( cat ~hbase/.ssh/id_rsa.pub )&amp;#34; 共享 HBase 配置目录 注意⚠️：下面的命令是在主机 ipa-server 上执行的。"><meta property="og:locale" content="en-us"><meta property="og:image" content="/images/favicon.ico"><style>body{font-family:bree serif,sans-serif;-webkit-font-smoothing:antialiased;margin:0 20px}article{max-width:800px;margin-left:auto;margin-right:auto}a{color:#000;text-decoration:none}a:hover{font-weight:600;text-decoration:underline}.post-ads{margin:50px 0}.markdown-body{font-size:18px;max-width:100%}.markdown-body a{text-decoration:underline;text-decoration-color:#000}.markdown-body blockquote{margin:0;padding:0 1em;color:#57606a;border-left:.25em solid #d0d7de}.markdown-body pre{padding:16px;overflow:auto;border-radius:10px}.markdown-body code{padding:.2em .4em;font-size:85%;background-color:#f6f8fa;border-radius:6px}.markdown-body pre>code{padding:0;font-size:100%;background-color:inherit;border:0}.Chinese .markdown-body{line-height:200%}.site-date-catalog{font-size:2rem}.header-title{font-size:2rem;font-weight:700;margin-top:32px;font-family:bungee shade,sans-serif}.header-title a{text-decoration:none}.header-subtitle{color:#666}.header-items{margin:10px 0}.header-item{margin:0 5px}.header-line{width:100%;border-width:2px;border-color:#482936;border-style:solid none none none}.lang-switch{font-weight:600}#posts-list{min-height:600px}.posts-line{font-size:1.2rem;margin:12px 0}.posts-categories{font-size:.8rem;margin:auto;text-align:center}.posts-category{padding:3px 0;border:#000 2px solid;border-radius:5px}.site-footer{margin-top:50px}.site-footer-item{margin-right:12px}.post-content img{max-width:100%;display:block;margin-right:auto;margin-top:12px}.post-header{margin-bottom:50px}.post-title{font-size:2rem;font-weight:600}.post-tags{display:inline;font-weight:600;padding:2px 5px;margin-right:6px;border:#000 2px solid;border-radius:5px}.post-date{font-weight:800;font-style:italic}.post-author{float:right;font-weight:600}.page-content{min-height:60%}.post-content{margin-bottom:50px}.post-content p{hyphens:auto;line-height:1.8;text-justify:ideographic;margin-bottom:1em}.related-content{border-width:3px;border-style:solid;border-color:#000;padding:0 10px;margin-bottom:50px;margin-top:100px}.related-content li{margin:5px 0}.taxonomy-term{font-size:3rem}.gallery-img{text-align:center}.gallery-img span{text-align:center}.gallery-img-desc{font-size:.8em;font-weight:800}#disqus_thread{position:relative}#disqus_thread:after{content:"";display:block;height:55px;width:100%;position:absolute;bottom:0;background:#fff}@media screen and (max-width:600px){.header-title,.header-subtitle,.header-items{text-align:center}.posts-line{font-size:16px}.markdown-body{font-size:16px}.post-title{font-size:2rem}.post-content p{letter-spacing:.05em}}@media screen and (max-width:48em){.posts-category{display:none}}</style><style>.container,.container-fluid{margin-right:auto;margin-left:auto}.container-fluid{padding-right:2rem;padding-left:2rem}.row{box-sizing:border-box;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-flex:0;-ms-flex:0 1 auto;flex:initial;-webkit-box-orient:horizontal;-webkit-box-direction:normal;-ms-flex-direction:row;flex-direction:row;-ms-flex-wrap:wrap;flex-wrap:wrap;margin-right:-.5rem;margin-left:-.5rem}.row.reverse{-webkit-box-orient:horizontal;-webkit-box-direction:reverse;-ms-flex-direction:row-reverse;flex-direction:row-reverse}.col.reverse{-webkit-box-orient:vertical;-webkit-box-direction:reverse;-ms-flex-direction:column-reverse;flex-direction:column-reverse}.col-xs,.col-xs-1,.col-xs-10,.col-xs-11,.col-xs-12,.col-xs-2,.col-xs-3,.col-xs-4,.col-xs-5,.col-xs-6,.col-xs-7,.col-xs-8,.col-xs-9,.col-xs-offset-0,.col-xs-offset-1,.col-xs-offset-10,.col-xs-offset-11,.col-xs-offset-12,.col-xs-offset-2,.col-xs-offset-3,.col-xs-offset-4,.col-xs-offset-5,.col-xs-offset-6,.col-xs-offset-7,.col-xs-offset-8,.col-xs-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-xs{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-xs-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-xs-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-xs-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-xs-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-xs-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-xs-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-xs-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-xs-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-xs-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-xs-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-xs-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-xs-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-xs-offset-0{margin-left:0}.col-xs-offset-1{margin-left:8.33333333%}.col-xs-offset-2{margin-left:16.66666667%}.col-xs-offset-3{margin-left:25%}.col-xs-offset-4{margin-left:33.33333333%}.col-xs-offset-5{margin-left:41.66666667%}.col-xs-offset-6{margin-left:50%}.col-xs-offset-7{margin-left:58.33333333%}.col-xs-offset-8{margin-left:66.66666667%}.col-xs-offset-9{margin-left:75%}.col-xs-offset-10{margin-left:83.33333333%}.col-xs-offset-11{margin-left:91.66666667%}.start-xs{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-xs{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-xs{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-xs{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-xs{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-xs{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-xs{-ms-flex-pack:distribute;justify-content:space-around}.between-xs{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-xs{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-xs{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}@media only screen and (min-width:48em){.container{width:49rem}.col-sm,.col-sm-1,.col-sm-10,.col-sm-11,.col-sm-12,.col-sm-2,.col-sm-3,.col-sm-4,.col-sm-5,.col-sm-6,.col-sm-7,.col-sm-8,.col-sm-9,.col-sm-offset-0,.col-sm-offset-1,.col-sm-offset-10,.col-sm-offset-11,.col-sm-offset-12,.col-sm-offset-2,.col-sm-offset-3,.col-sm-offset-4,.col-sm-offset-5,.col-sm-offset-6,.col-sm-offset-7,.col-sm-offset-8,.col-sm-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-sm{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-sm-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-sm-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-sm-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-sm-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-sm-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-sm-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-sm-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-sm-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-sm-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-sm-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-sm-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-sm-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-sm-offset-0{margin-left:0}.col-sm-offset-1{margin-left:8.33333333%}.col-sm-offset-2{margin-left:16.66666667%}.col-sm-offset-3{margin-left:25%}.col-sm-offset-4{margin-left:33.33333333%}.col-sm-offset-5{margin-left:41.66666667%}.col-sm-offset-6{margin-left:50%}.col-sm-offset-7{margin-left:58.33333333%}.col-sm-offset-8{margin-left:66.66666667%}.col-sm-offset-9{margin-left:75%}.col-sm-offset-10{margin-left:83.33333333%}.col-sm-offset-11{margin-left:91.66666667%}.start-sm{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-sm{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-sm{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-sm{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-sm{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-sm{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-sm{-ms-flex-pack:distribute;justify-content:space-around}.between-sm{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-sm{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-sm{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:64em){.container{width:65rem}.col-md,.col-md-1,.col-md-10,.col-md-11,.col-md-12,.col-md-2,.col-md-3,.col-md-4,.col-md-5,.col-md-6,.col-md-7,.col-md-8,.col-md-9,.col-md-offset-0,.col-md-offset-1,.col-md-offset-10,.col-md-offset-11,.col-md-offset-12,.col-md-offset-2,.col-md-offset-3,.col-md-offset-4,.col-md-offset-5,.col-md-offset-6,.col-md-offset-7,.col-md-offset-8,.col-md-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-md{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-md-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-md-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-md-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-md-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-md-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-md-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-md-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-md-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-md-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-md-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-md-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-md-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-md-offset-0{margin-left:0}.col-md-offset-1{margin-left:8.33333333%}.col-md-offset-2{margin-left:16.66666667%}.col-md-offset-3{margin-left:25%}.col-md-offset-4{margin-left:33.33333333%}.col-md-offset-5{margin-left:41.66666667%}.col-md-offset-6{margin-left:50%}.col-md-offset-7{margin-left:58.33333333%}.col-md-offset-8{margin-left:66.66666667%}.col-md-offset-9{margin-left:75%}.col-md-offset-10{margin-left:83.33333333%}.col-md-offset-11{margin-left:91.66666667%}.start-md{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-md{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-md{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-md{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-md{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-md{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-md{-ms-flex-pack:distribute;justify-content:space-around}.between-md{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-md{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-md{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}@media only screen and (min-width:75em){.container{width:76rem}.col-lg,.col-lg-1,.col-lg-10,.col-lg-11,.col-lg-12,.col-lg-2,.col-lg-3,.col-lg-4,.col-lg-5,.col-lg-6,.col-lg-7,.col-lg-8,.col-lg-9,.col-lg-offset-0,.col-lg-offset-1,.col-lg-offset-10,.col-lg-offset-11,.col-lg-offset-12,.col-lg-offset-2,.col-lg-offset-3,.col-lg-offset-4,.col-lg-offset-5,.col-lg-offset-6,.col-lg-offset-7,.col-lg-offset-8,.col-lg-offset-9{box-sizing:border-box;-webkit-box-flex:0;-ms-flex:0 0 auto;flex:none;padding-right:.5rem;padding-left:.5rem}.col-lg{-webkit-box-flex:1;-ms-flex-positive:1;flex-grow:1;-ms-flex-preferred-size:0;flex-basis:0;max-width:100%}.col-lg-1{-ms-flex-preferred-size:8.33333333%;flex-basis:8.33333333%;max-width:8.33333333%}.col-lg-2{-ms-flex-preferred-size:16.66666667%;flex-basis:16.66666667%;max-width:16.66666667%}.col-lg-3{-ms-flex-preferred-size:25%;flex-basis:25%;max-width:25%}.col-lg-4{-ms-flex-preferred-size:33.33333333%;flex-basis:33.33333333%;max-width:33.33333333%}.col-lg-5{-ms-flex-preferred-size:41.66666667%;flex-basis:41.66666667%;max-width:41.66666667%}.col-lg-6{-ms-flex-preferred-size:50%;flex-basis:50%;max-width:50%}.col-lg-7{-ms-flex-preferred-size:58.33333333%;flex-basis:58.33333333%;max-width:58.33333333%}.col-lg-8{-ms-flex-preferred-size:66.66666667%;flex-basis:66.66666667%;max-width:66.66666667%}.col-lg-9{-ms-flex-preferred-size:75%;flex-basis:75%;max-width:75%}.col-lg-10{-ms-flex-preferred-size:83.33333333%;flex-basis:83.33333333%;max-width:83.33333333%}.col-lg-11{-ms-flex-preferred-size:91.66666667%;flex-basis:91.66666667%;max-width:91.66666667%}.col-lg-12{-ms-flex-preferred-size:100%;flex-basis:100%;max-width:100%}.col-lg-offset-0{margin-left:0}.col-lg-offset-1{margin-left:8.33333333%}.col-lg-offset-2{margin-left:16.66666667%}.col-lg-offset-3{margin-left:25%}.col-lg-offset-4{margin-left:33.33333333%}.col-lg-offset-5{margin-left:41.66666667%}.col-lg-offset-6{margin-left:50%}.col-lg-offset-7{margin-left:58.33333333%}.col-lg-offset-8{margin-left:66.66666667%}.col-lg-offset-9{margin-left:75%}.col-lg-offset-10{margin-left:83.33333333%}.col-lg-offset-11{margin-left:91.66666667%}.start-lg{-webkit-box-pack:start;-ms-flex-pack:start;justify-content:flex-start;text-align:start}.center-lg{-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;text-align:center}.end-lg{-webkit-box-pack:end;-ms-flex-pack:end;justify-content:flex-end;text-align:end}.top-lg{-webkit-box-align:start;-ms-flex-align:start;align-items:flex-start}.middle-lg{-webkit-box-align:center;-ms-flex-align:center;align-items:center}.bottom-lg{-webkit-box-align:end;-ms-flex-align:end;align-items:flex-end}.around-lg{-ms-flex-pack:distribute;justify-content:space-around}.between-lg{-webkit-box-pack:justify;-ms-flex-pack:justify;justify-content:space-between}.first-lg{-webkit-box-ordinal-group:0;-ms-flex-order:-1;order:-1}.last-lg{-webkit-box-ordinal-group:2;-ms-flex-order:1;order:1}}</style><link href=/index.xml rel=alternate type=application/rss+xml title=王伟的个人博客><link rel=preconnect href=https://fonts.gstatic.com><link href="https://fonts.googleapis.com/css?family=Bree+Serif|Bungee+Shade" rel=stylesheet></head><body><article class=post id=article><div class=row><div class=col-xs-12><div class=site-header><header><div class=header-title><a href=/>persistence</a></div><div class=header-subtitle>我老婆说我是一个执着的人</div></header><div class="row end-md center-xs header-items"></div><div class="row end-xs"></div><div class=header-line></div></div><header class=post-header><h1 class=post-title>安装 HBase 集群(Rocky Linux 9.2)</h1><div class="row post-desc"><div class=col-xs-6><time class=post-date datetime="2024-01-05 00:00:00 UTC">05 Jan 2024</time></div><div class=col-xs-6><div class=post-author><a target=_blank href=https://dreamwill.github.io/>@许王伟</a></div></div></div></header><div class="post-content markdown-body"><p>安装目标：</p><ul><li><input checked disabled type=checkbox> HBase 集群启用 Kerberos 认证。</li><li><input checked disabled type=checkbox> HBase 由 2 个 Master 和 3 个 RegionServer 组成集群。</li><li><input checked disabled type=checkbox> HBase 的版本是 2.5.7。</li></ul><hr><p>前置条件：</p><ul><li><input checked disabled type=checkbox> 已按照<a href=../%E5%AE%89%E8%A3%85hadoop%E9%9B%86%E7%BE%A4rocky-linux-9.2/>安装 Hadoop 集群(Rocky Linux 9.2)</a>安装 Hadoop。</li></ul><hr><h2 id=准备用户>准备用户</h2><blockquote><p>注意⚠️：下面的命令是在主机 ipa-server 上执行的。</p></blockquote><ol><li>身份认证</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span>[root@ipa-server ~]# kinit admin
+</span></span><span style=display:flex><span>Password for admin@XUWANGWEI.TEST: 
+</span></span></code></pre></div><ol start=2><li>新增用户 hbase</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-console data-lang=console><span style=display:flex><span>ipa user-add hbase --first=hbase --last=hadoop --shell=/bin/bash --gidnumber=1532600004
+</span></span><span style=display:flex><span>su - hbase
+</span></span><span style=display:flex><span>ssh-keygen -t rsa -P &#39;&#39; -f ~/.ssh/id_rsa
+</span></span><span style=display:flex><span>cat ~/.ssh/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys
+</span></span><span style=display:flex><span>chmod 0600 ~/.ssh/authorized_keys
+</span></span><span style=display:flex><span>exit
+</span></span><span style=display:flex><span>ipa user-mod hbase --sshpubkey=&#34;$( cat ~hbase/.ssh/id_rsa.pub )&#34;
+</span></span></code></pre></div><h2 id=共享-hbase-配置目录>共享 HBase 配置目录</h2><blockquote><p>注意⚠️：下面的命令是在主机 ipa-server 上执行的。</p></blockquote><ol><li>修改 NFS 配置文件/etc/exports，使得主机 ipa-server 上的/etc/hbase 目录共享给其他主机。</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>echo <span style=color:#e6db74>&#39;/etc/hbase 192.168.2.0/24(rw,sync,no_root_squash)&#39;</span> &gt;&gt; /etc/exports
+</span></span></code></pre></div><ol start=2><li>创建 HBase 配置目录并设置属主属组</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mkdir /etc/hbase
+</span></span><span style=display:flex><span>chown hbase:hadoop /etc/hbase
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>755</span> /etc/hbase
+</span></span></code></pre></div><ol start=3><li>刷新 NFS 的配置</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>exportfs -rv
+</span></span></code></pre></div><ol start=4><li>在 IPA Server 上创建挂载配置</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ipa automountkey-add default auto.direct --key<span style=color:#f92672>=</span>/etc/hbase --info<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;-fstype=nfs4,rw ipa-server:/etc/hbase&#34;</span>
+</span></span></code></pre></div><h2 id=安装-hbase>安装 HBase</h2><blockquote><p>注意⚠️：下面的命令需要在主机 machine1~machine5 上执行。</p></blockquote><ol><li>下载、解压、创建别名</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>cd /opt
+</span></span><span style=display:flex><span>curl -O https://dlcdn.apache.org/hbase/2.5.7/hbase-2.5.7-hadoop3-bin.tar.gz
+</span></span><span style=display:flex><span>tar -zxf hbase-2.5.7-hadoop3-bin.tar.gz
+</span></span><span style=display:flex><span>ln -s hbase-2.5.7-hadoop3 hbase
+</span></span></code></pre></div><ol start=2><li>添加环境变量</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export HBASE_HOME=/opt/hbase&#39;</span> &gt; /etc/profile.d/hbase.sh
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export PATH=$PATH:$HBASE_HOME/bin&#39;</span> &gt;&gt; /etc/profile.d/hbase.sh
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export HBASE_CONF_DIR=/etc/hbase&#39;</span> &gt;&gt; /etc/profile.d/hbase.sh
+</span></span><span style=display:flex><span>source /etc/profile.d/hbase.sh
+</span></span></code></pre></div><ol start=3><li>创建数据目录并设置属主属组</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>chown -R -H hbase:hadoop $HBASE_HOME
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>755</span> $HBASE_HOME
+</span></span><span style=display:flex><span>mkdir /var/lib/hbase
+</span></span><span style=display:flex><span>chown hbase:hadoop /var/lib/hbase
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>750</span> /var/lib/hbase
+</span></span></code></pre></div><ol start=4><li>创建配置目录并设置属主属组</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mkdir /etc/hbase
+</span></span><span style=display:flex><span>chown hbase:hadoop /etc/hbase
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>755</span> /etc/hbase
+</span></span></code></pre></div><ol start=5><li>创建日志目录并设置属主属组</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mkdir /var/log/hbase
+</span></span><span style=display:flex><span>chown hbase:hadoop /var/log/hbase
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>755</span> /var/log/hbase
+</span></span></code></pre></div><ol start=7><li>共享 ipa-server 的/etc/hbase 目录</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>systemctl reload autofs
+</span></span></code></pre></div><h2 id=准备-kerberos-principals-和-keytab-files>准备 Kerberos principals 和 keytab files</h2><blockquote><p>注意⚠️：下面的命令是在主机 ipa-server 上执行的。</p></blockquote><ol><li>创建principal</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ipa service-add hbase/machine1.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add hbase/machine2.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add hbase/machine3.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add hbase/machine4.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span><span style=display:flex><span>ipa service-add hbase/machine5.xuwangwei.test@XUWANGWEI.TEST --requires-pre-auth<span style=color:#f92672>=</span>true
+</span></span></code></pre></div><ol start=2><li>导出principal的密钥</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hbase/machine1.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hbase/hbase.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hbase/machine2.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hbase/hbase.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hbase/machine3.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hbase/hbase.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hbase/machine4.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hbase/hbase.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hbase/machine5.xuwangwei.test@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hbase/hbase.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span><span style=display:flex><span>ipa-getkeytab --principal<span style=color:#f92672>=</span>hbase@XUWANGWEI.TEST --keytab<span style=color:#f92672>=</span>/etc/hbase/hbase.keytab --enctypes<span style=color:#f92672>=</span>aes256-sha1,aes128-sha1
+</span></span></code></pre></div><ol start=3><li>修改keytab的属主属组和权限</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>chown hbase:hadoop /etc/hbase/*.keytab
+</span></span><span style=display:flex><span>chmod <span style=color:#ae81ff>640</span> /etc/hbase/*.keytab
+</span></span></code></pre></div><h2 id=配置-hbase>配置 HBase</h2><blockquote><p>注意⚠️：下面的命令是在主机 machine1 上执行的。</p></blockquote><ol><li>复制安装包中的默认配置文件到配置目录</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>cp -a $HBASE_HOME/conf/* $HBASE_CONF_DIR/
+</span></span></code></pre></div><ol start=2><li>修改配置文件$HBASE_CONF_DIR/hbase-env.sh</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#75715e>#!/usr/bin/env bash
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span><span style=color:#75715e>#</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#/**</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * Licensed to the Apache Software Foundation (ASF) under one</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * or more contributor license agreements.  See the NOTICE file</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * distributed with this work for additional information</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * regarding copyright ownership.  The ASF licenses this file</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * to you under the Apache License, Version 2.0 (the</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * &#34;License&#34;); you may not use this file except in compliance</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * with the License.  You may obtain a copy of the License at</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># *</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># *     http://www.apache.org/licenses/LICENSE-2.0</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># *</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * Unless required by applicable law or agreed to in writing, software</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * See the License for the specific language governing permissions and</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># * limitations under the License.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># */</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Set environment variables here.</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># This script sets variables multiple times over the course of starting an hbase process,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># so try to keep things idempotent unless you want to take an even deeper look</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># into the startup scripts (bin/hbase, etc.)</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># The java implementation to use.  Java 1.8+ required.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export JAVA_HOME=/usr/java/jdk1.8.0/</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Extra Java CLASSPATH elements.  Optional.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_CLASSPATH=</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># The maximum amount of heap to use. Default is left to JVM default.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_HEAPSIZE=1G</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Uncomment below if you intend to use off heap cache. For example, to allocate 8G of</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># offheap, set the value to &#34;8G&#34;.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_OFFHEAPSIZE=1G</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Extra Java runtime options.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Default settings are applied according to the detected JVM version. Override these default</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># settings by specifying a value here. For more details on possible settings,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># see http://hbase.apache.org/book.html#_jvm_tuning</span>
+</span></span><span style=display:flex><span>export HBASE_OPTS<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;</span><span style=color:#e6db74>${</span>HBASE_OPTS<span style=color:#e6db74>}</span><span style=color:#e6db74> -Djava.net.preferIPv4Stack=true&#34;</span>
+</span></span><span style=display:flex><span>export HBASE_SHELL_OPTS<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;</span><span style=color:#e6db74>${</span>HBASE_SHELL_OPTS<span style=color:#e6db74>}</span><span style=color:#e6db74> -Djava.security.auth.login.config=</span>$HBASE_CONF_DIR<span style=color:#e6db74>/client-jaas.conf&#34;</span>
+</span></span><span style=display:flex><span>export HBASE_MASTER_OPTS<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;</span><span style=color:#e6db74>${</span>HBASE_MASTER_OPTS<span style=color:#e6db74>}</span><span style=color:#e6db74> -Djava.security.auth.login.config=</span>$HBASE_CONF_DIR<span style=color:#e6db74>/server-jaas.conf&#34;</span>
+</span></span><span style=display:flex><span>export HBASE_REGIONSERVER_OPTS<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;</span><span style=color:#e6db74>${</span>HBASE_REGIONSERVER_OPTS<span style=color:#e6db74>}</span><span style=color:#e6db74> -Djava.security.auth.login.config=</span>$HBASE_CONF_DIR<span style=color:#e6db74>/server-jaas.conf&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Uncomment one of the below three options to enable java garbage collection logging for the server-side processes.</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># This enables basic gc logging to the .out file.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export SERVER_GC_OPTS=&#34;-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># This enables basic gc logging to its own file.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># If FILE-PATH is not replaced, the log file(.gc) would still be generated in the HBASE_LOG_DIR .</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export SERVER_GC_OPTS=&#34;-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:&lt;FILE-PATH&gt;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># This enables basic GC logging to its own file with automatic log rolling. Only applies to jdk 1.6.0_34+ and 1.7.0_2+.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># If FILE-PATH is not replaced, the log file(.gc) would still be generated in the HBASE_LOG_DIR .</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export SERVER_GC_OPTS=&#34;-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:&lt;FILE-PATH&gt; -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=1 -XX:GCLogFileSize=512M&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Uncomment one of the below three options to enable java garbage collection logging for the client processes.</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># This enables basic gc logging to the .out file.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export CLIENT_GC_OPTS=&#34;-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># This enables basic gc logging to its own file.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># If FILE-PATH is not replaced, the log file(.gc) would still be generated in the HBASE_LOG_DIR .</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export CLIENT_GC_OPTS=&#34;-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:&lt;FILE-PATH&gt;&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># This enables basic GC logging to its own file with automatic log rolling. Only applies to jdk 1.6.0_34+ and 1.7.0_2+.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># If FILE-PATH is not replaced, the log file(.gc) would still be generated in the HBASE_LOG_DIR .</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export CLIENT_GC_OPTS=&#34;-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:&lt;FILE-PATH&gt; -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=1 -XX:GCLogFileSize=512M&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># See the package documentation for org.apache.hadoop.hbase.io.hfile for other configurations</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># needed setting up off-heap block caching.</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Uncomment and adjust to enable JMX exporting</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># See jmxremote.password and jmxremote.access in $JRE_HOME/lib/management to configure remote password access.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># More details at: http://java.sun.com/javase/6/docs/technotes/guides/management/agent.html</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># NOTE: HBase provides an alternative JMX implementation to fix the random ports issue, please see JMX</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># section in HBase Reference Guide for instructions.</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_JMX_BASE=&#34;-Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_MASTER_OPTS=&#34;$HBASE_MASTER_OPTS $HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10101&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_REGIONSERVER_OPTS=&#34;$HBASE_REGIONSERVER_OPTS $HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10102&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_THRIFT_OPTS=&#34;$HBASE_THRIFT_OPTS $HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10103&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_ZOOKEEPER_OPTS=&#34;$HBASE_ZOOKEEPER_OPTS $HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10104&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_REST_OPTS=&#34;$HBASE_REST_OPTS $HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10105&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># File naming hosts on which HRegionServers will run.  $HBASE_HOME/conf/regionservers by default.</span>
+</span></span><span style=display:flex><span>export HBASE_REGIONSERVERS<span style=color:#f92672>=</span>$HBASE_CONF_DIR/regionservers
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Uncomment and adjust to keep all the Region Server pages mapped to be memory resident</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#HBASE_REGIONSERVER_MLOCK=true</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#HBASE_REGIONSERVER_UID=&#34;hbase&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># File naming hosts on which backup HMaster will run.  $HBASE_HOME/conf/backup-masters by default.</span>
+</span></span><span style=display:flex><span>export HBASE_BACKUP_MASTERS<span style=color:#f92672>=</span>$HBASE_CONF_DIR/backup-masters
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Extra ssh options.  Empty by default.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_SSH_OPTS=&#34;-o ConnectTimeout=1 -o SendEnv=HBASE_CONF_DIR&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Where log files are stored.  $HBASE_HOME/logs by default.</span>
+</span></span><span style=display:flex><span>export HBASE_LOG_DIR<span style=color:#f92672>=</span>/var/log/hbase
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Enable remote JDWP debugging of major HBase processes. Meant for Core Developers</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_MASTER_OPTS=&#34;$HBASE_MASTER_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8070&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_REGIONSERVER_OPTS=&#34;$HBASE_REGIONSERVER_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8071&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_THRIFT_OPTS=&#34;$HBASE_THRIFT_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8072&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_ZOOKEEPER_OPTS=&#34;$HBASE_ZOOKEEPER_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8073&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_REST_OPTS=&#34;$HBASE_REST_OPTS -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8074&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># A string representing this instance of hbase. $USER by default.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_IDENT_STRING=$USER</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># The scheduling priority for daemon processes.  See &#39;man nice&#39;.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_NICENESS=10</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># The directory where pid files are stored. /tmp by default.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_PID_DIR=/var/hadoop/pids</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Seconds to sleep between slave commands.  Unset by default.  This</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># can be useful in large clusters, where, e.g., slave rsyncs can</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># otherwise arrive faster than the master can service them.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_SLAVE_SLEEP=0.1</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Tell HBase whether it should manage it&#39;s own instance of ZooKeeper or not.</span>
+</span></span><span style=display:flex><span>export HBASE_MANAGES_ZK<span style=color:#f92672>=</span>false
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># The default log rolling policy is RFA, where the log file is rolled as per the size defined for the</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># RFA appender. Please refer to the log4j2.properties file to see more details on this appender.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># In case one needs to do log rolling on a date change, one should set the environment property</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># HBASE_ROOT_LOGGER to &#34;&lt;DESIRED_LOG LEVEL&gt;,DRFA&#34;.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># For example:</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_ROOT_LOGGER=INFO,DRFA</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># The reason for changing default to RFA is to avoid the boundary case of filling out disk space as</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># DRFA doesn&#39;t put any cap on the log size. Please refer to HBase-5655 for more context.</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Tell HBase whether it should include Hadoop&#39;s lib when start up,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># the default value is false,means that includes Hadoop&#39;s lib.</span>
+</span></span><span style=display:flex><span>export HBASE_DISABLE_HADOOP_CLASSPATH_LOOKUP<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;true&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Override text processing tools for use by these launch scripts.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export GREP=&#34;${GREP-grep}&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export SED=&#34;${SED-sed}&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>## OpenTelemetry Tracing</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># HBase is instrumented for tracing using OpenTelemetry. None of the other OpenTelemetry signals</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># are supported at this time. Configuring tracing involves setting several configuration points,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># via environment variable or system property. This configuration prefers setting environment</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># variables whenever possible because they are picked up by all processes launched by `bin/hbase`.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Use system properties when you launch multiple processes from the same configuration directory --</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># when you need to specify different configuration values for different hbase processes that are</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># launched using the same HBase configuration (i.e., a single-host pseudo-distributed cluster or</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># launching the `bin/hbase shell` from a host that is also running an instance of the master). See</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># https://github.com/open-telemetry/opentelemetry-java/tree/v1.15.0/sdk-extensions/autoconfigure</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># for an inventory of configuration points and detailed explanations of each of them.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Note also that as of this writing, the javaagent logs to stderr and is not configured along with</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># the rest of HBase&#39;s logging configuration.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># `HBASE_OTEL_TRACING_ENABLED`, required. Enable attaching the opentelemetry javaagent to the</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># process via support provided by `bin/hbase`. When this value us `false`, the agent is not added</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># to the process launch arguments and all further OpenTelemetry configuration is ignored.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_OTEL_TRACING_ENABLED=true</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># `OPENTELEMETRY_JAVAAGENT_PATH`, optional. Override the javaagent provided by HBase in `lib/trace`</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># with an alternate. Use when you need to upgrade the agent version or swap out the official one</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># for an alternative implementation.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export OPENTELEMETRY_JAVAAGENT_PATH=&#34;&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># `OTEL_FOO_EXPORTER`, required. Specify an Exporter implementation per signal type. HBase only</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># makes explicit use of the traces signal at this time, so the important one is</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># `OTEL_TRACES_EXPORTER`. Specify its value based on the exporter required for your tracing</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># environment. The other two should be uncommented and specified as `none`, otherwise the agent</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># may report errors while attempting to export these other signals to an unconfigured destination.</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># https://github.com/open-telemetry/opentelemetry-java/tree/v1.15.0/sdk-extensions/autoconfigure#exporters</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export OTEL_TRACES_EXPORTER=&#34;&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export OTEL_METRICS_EXPORTER=&#34;none&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export OTEL_LOGS_EXPORTER=&#34;none&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># `OTEL_SERVICE_NAME`, required. Specify &#34;resource attributes&#34;, and specifically the `service.name`,</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># as a unique value for each HBase process. OpenTelemetry allows for specifying this value in one</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># of two ways, via environment variables with the `OTEL_` prefix, or via system properties with the</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># `otel.` prefix. Which you use with HBase is decided based on whether this configuration file is</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># read by a single process or shared by multiple HBase processes. For the default standalone mode</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># or an environment where all processes share the same configuration file, use the `otel` system</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># properties by uncommenting all of the `HBASE_FOO_OPTS` exports below. When this configuration file</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># is being consumed by only a single process -- for example, from a systemd configuration or in a</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># container template -- replace use of `HBASE_FOO_OPTS` with the standard `OTEL_SERVICE_NAME` and/or</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># `OTEL_RESOURCE_ATTRIBUTES` environment variables. For further details, see</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># https://github.com/open-telemetry/opentelemetry-java/tree/v1.15.0/sdk-extensions/autoconfigure#opentelemetry-resource</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_CANARY_OPTS=&#34;${HBASE_CANARY_OPTS} -Dotel.resource.attributes=service.name=hbase-canary&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_HBCK_OPTS=&#34;${HBASE_HBCK_OPTS} -Dotel.resource.attributes=service.name=hbase-hbck&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_HBTOP_OPTS=&#34;${HBASE_HBTOP_OPTS} -Dotel.resource.attributes=service.name=hbase-hbtop&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_JSHELL_OPTS=&#34;${HBASE_JSHELL_OPTS} -Dotel.resource.attributes=service.name=hbase-jshell&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_LTT_OPTS=&#34;${HBASE_LTT_OPTS} -Dotel.resource.attributes=service.name=hbase-loadtesttool&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_MASTER_OPTS=&#34;${HBASE_MASTER_OPTS} -Dotel.resource.attributes=service.name=hbase-master&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_PE_OPTS=&#34;${HBASE_PE_OPTS} -Dotel.resource.attributes=service.name=hbase-performanceevaluation&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_REGIONSERVER_OPTS=&#34;${HBASE_REGIONSERVER_OPTS} -Dotel.resource.attributes=service.name=hbase-regionserver&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_REST_OPTS=&#34;${HBASE_REST_OPTS} -Dotel.resource.attributes=service.name=hbase-rest&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_SHELL_OPTS=&#34;${HBASE_SHELL_OPTS} -Dotel.resource.attributes=service.name=hbase-shell&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_THRIFT_OPTS=&#34;${HBASE_THRIFT_OPTS} -Dotel.resource.attributes=service.name=hbase-thrift&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#export HBASE_ZOOKEEPER_OPTS=&#34;${HBASE_ZOOKEEPER_OPTS} -Dotel.resource.attributes=service.name=hbase-zookeeper&#34;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># JDK11+ JShell</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>#</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># Additional arguments passed to jshell invocation</span>
+</span></span><span style=display:flex><span><span style=color:#75715e># export HBASE_JSHELL_ARGS=&#34;--startup DEFAULT --startup PRINTING --startup hbase_startup.jsh&#34;</span>
+</span></span></code></pre></div><ol start=3><li>修改配置文件$HBASE_CONF_DIR/hbase-site.xml</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-xml data-lang=xml><span style=display:flex><span><span style=color:#75715e>&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!--
+</span></span></span><span style=display:flex><span><span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * Licensed to the Apache Software Foundation (ASF) under one
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * or more contributor license agreements.  See the NOTICE file
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * distributed with this work for additional information
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * regarding copyright ownership.  The ASF licenses this file
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * to you under the Apache License, Version 2.0 (the
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * &#34;License&#34;); you may not use this file except in compliance
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * with the License.  You may obtain a copy of the License at
+</span></span></span><span style=display:flex><span><span style=color:#75715e> *
+</span></span></span><span style=display:flex><span><span style=color:#75715e> *     http://www.apache.org/licenses/LICENSE-2.0
+</span></span></span><span style=display:flex><span><span style=color:#75715e> *
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * Unless required by applicable law or agreed to in writing, software
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * See the License for the specific language governing permissions and
+</span></span></span><span style=display:flex><span><span style=color:#75715e> * limitations under the License.
+</span></span></span><span style=display:flex><span><span style=color:#75715e> */
+</span></span></span><span style=display:flex><span><span style=color:#75715e>--&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;configuration&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hbase.cluster.distributed<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>true<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hbase.rootdir<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>hdfs://xuwangwei/user/hbase<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hbase.zookeeper.quorum<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine1.xuwangwei.test:2181,machine2.xuwangwei.test:2181,machine3.xuwangwei.test:2181,machine4.xuwangwei.test:2181,machine5.xuwangwei.test:2181<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hbase.security.authentication<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>kerberos<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hbase.rpc.protection<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>authentication,integrity,privacy<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hbase.master.keytab.file<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hbase/hbase.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hbase.master.kerberos.principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>hbase/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hbase.regionserver.keytab.file<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/etc/hbase/hbase.keytab<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hbase.regionserver.kerberos.principal<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>hbase/_HOST@XUWANGWEI.TEST<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hbase.tmp.dir<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/var/lib/hbase/hbase-${user.name}<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;/configuration&gt;</span>
+</span></span></code></pre></div><ol start=4><li>修改配置文件$HBASE_CONF_DIR/regionservers</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>echo <span style=color:#e6db74>&#39;machine3.xuwangwei.test&#39;</span> &gt; $HBASE_CONF_DIR/regionservers
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;machine4.xuwangwei.test&#39;</span> &gt;&gt; $HBASE_CONF_DIR/regionservers
+</span></span><span style=display:flex><span>echo <span style=color:#e6db74>&#39;machine5.xuwangwei.test&#39;</span> &gt;&gt; $HBASE_CONF_DIR/regionservers
+</span></span></code></pre></div><ol start=5><li>创建配置文件$HBASE_CONF_DIR/backup-masters</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>echo <span style=color:#e6db74>&#39;machine2.xuwangwei.test&#39;</span> &gt; $HBASE_CONF_DIR/backup-masters
+</span></span></code></pre></div><ol start=6><li>创建配置文件$HBASE_CONF_DIR/client-jaas.conf</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>Client {
+</span></span><span style=display:flex><span>  com.sun.security.auth.module.Krb5LoginModule required
+</span></span><span style=display:flex><span>  useKeyTab=false
+</span></span><span style=display:flex><span>  useTicketCache=true;
+</span></span><span style=display:flex><span>};
+</span></span></code></pre></div><ol start=7><li>创建配置文件$HBASE_CONF_DIR/server-jaas.conf</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>Client {
+</span></span><span style=display:flex><span>  com.sun.security.auth.module.Krb5LoginModule required
+</span></span><span style=display:flex><span>  useKeyTab=true
+</span></span><span style=display:flex><span>  useTicketCache=false
+</span></span><span style=display:flex><span>  keyTab=&#34;/etc/hbase/hbase.keytab&#34;
+</span></span><span style=display:flex><span>  principal=&#34;hbase&#34;;
+</span></span><span style=display:flex><span>};
+</span></span></code></pre></div><ol start=8><li>修改 3 个新建文件的属主属组</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>chown hbase:hadoop $HBASE_CONF_DIR/backup-masters
+</span></span><span style=display:flex><span>chown hbase:hadoop $HBASE_CONF_DIR/client-jaas.conf
+</span></span><span style=display:flex><span>chown hbase:hadoop $HBASE_CONF_DIR/server-jaas.conf
+</span></span></code></pre></div><ol start=9><li>修改配置文件 $HADOOP_CONF_DIR/core-site.xml</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-xml data-lang=xml><span style=display:flex><span><span style=color:#75715e>&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;?xml-stylesheet type=&#34;text/xsl&#34; href=&#34;configuration.xsl&#34;?&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!--
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  you may not use this file except in compliance with the License.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  You may obtain a copy of the License at
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>    http://www.apache.org/licenses/LICENSE-2.0
+</span></span></span><span style=display:flex><span><span style=color:#75715e>
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  Unless required by applicable law or agreed to in writing, software
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  See the License for the specific language governing permissions and
+</span></span></span><span style=display:flex><span><span style=color:#75715e>  limitations under the License. See accompanying LICENSE file.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>--&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e>&lt;!-- Put site-specific property overrides in this file. --&gt;</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;configuration&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>fs.defaultFS<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>hdfs://xuwangwei<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.tmp.dir<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>/var/lib/hadoop<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.zk.address<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine1.xuwangwei.test:2181,machine2.xuwangwei.test:2181,machine3.xuwangwei.test:2181,machine4.xuwangwei.test:2181,machine5.xuwangwei.test:2181<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>ha.zookeeper.quorum<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>machine1.xuwangwei.test:2181,machine2.xuwangwei.test:2181,machine3.xuwangwei.test:2181,machine4.xuwangwei.test:2181,machine5.xuwangwei.test:2181<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.security.authentication<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>kerberos<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.rpc.protection<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>authentication,integrity,privacy<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.proxyuser.hive.hosts<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>*<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.proxyuser.hive.groups<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>*<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.proxyuser.hbase.hosts<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>*<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;property&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;name&gt;</span>hadoop.proxyuser.hbase.groups<span style=color:#f92672>&lt;/name&gt;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>&lt;value&gt;</span>*<span style=color:#f92672>&lt;/value&gt;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>&lt;/property&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>&lt;/configuration&gt;</span>
+</span></span></code></pre></div><ol start=10><li>创建别名。$HADOOP_CONF_DIR/hdfs-site.xml ➡️ $HBASE_CONF_DIR/hdfs-site.xml</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ln -s $HADOOP_CONF_DIR/hdfs-site.xml $HBASE_CONF_DIR/hdfs-site.xml
+</span></span></code></pre></div><ol start=11><li>修改 hbase 用户可以同时打开的文件数量</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>echo <span style=color:#e6db74>&#39;hbase  -  nofile  10240&#39;</span> &gt; /etc/security/limits.d/hbase.conf
+</span></span></code></pre></div><ol start=12><li>使 core-site.xml 中刚修改的配置生效</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;kinit -kt /etc/hadoop/hdfs.keytab hdfs&#34;</span>
+</span></span><span style=display:flex><span>su - hdfs -c <span style=color:#e6db74>&#34;hdfs dfsadmin -refreshSuperUserGroupsConfiguration&#34;</span>
+</span></span><span style=display:flex><span>su - yarn -c <span style=color:#e6db74>&#34;kinit -kt /etc/hadoop/yarn.keytab yarn&#34;</span>
+</span></span><span style=display:flex><span>su - yarn -c <span style=color:#e6db74>&#34;yarn rmadmin -refreshSuperUserGroupsConfiguration&#34;</span>
+</span></span></code></pre></div><h2 id=启动-hbase>启动 HBase</h2><ol><li>启动</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - hbase -c <span style=color:#e6db74>&#39;start-hbase.sh&#39;</span>
+</span></span></code></pre></div><h2 id=使用-hbase-shell-连接-hbase-服务>使用 HBase Shell 连接 HBase 服务</h2><ol><li>添加 hbase 用户的环境变量</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export KRB5CCNAME=FILE:/tmp/krb5cc_$UID&#39;</span> &gt;&gt; ~hbase/.bashrc
+</span></span></code></pre></div><ol start=2><li>使用 <a href=mailto:hbase@XUWANGWEI.TEST>hbase@XUWANGWEI.TEST</a> 帐号进行 Kerberos 认证</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - hbase -c <span style=color:#e6db74>&#34;kinit -kt /etc/hbase/hbase.keytab hbase&#34;</span>
+</span></span></code></pre></div><ol start=3><li>使用 HBase Shell 连接 HBase 集群</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>su - hbase -c <span style=color:#e6db74>&#34;hbase shell&#34;</span>
+</span></span></code></pre></div><ol start=4><li>连接成功，日志如下所示</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>HBase Shell
+</span></span><span style=display:flex><span>Use &#34;help&#34; to get list of supported commands.
+</span></span><span style=display:flex><span>Use &#34;exit&#34; to quit this interactive shell.
+</span></span><span style=display:flex><span>For Reference, please visit: http://hbase.apache.org/2.0/book.html#shell
+</span></span><span style=display:flex><span>Version 2.5.7-hadoop3, r6788f98356dd70b4a7ff766ea7a8298e022e7b95, Thu Dec 14 16:16:10 PST 2023
+</span></span><span style=display:flex><span>Took 0.0046 seconds  
+</span></span></code></pre></div></div><div class="row middle-xs"><div class=col-xs-12></div></div><div class=row><div class=col-xs-12></div></div><div style=height:50px></div><div class=site-footer></div></div></div></article><script></script></body></html>
