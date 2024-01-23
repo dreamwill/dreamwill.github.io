@@ -66,5 +66,6 @@
   </script> -->
 
   {{ if .Site.Params.TwitterCards }}{{ template "_internal/twitter_cards.html" . }}{{ end }}
+  {{ template "_internal/google_analytics.html" . }}
   {{ .Site.Params.extraHead | safeHTML }}
 </head>
