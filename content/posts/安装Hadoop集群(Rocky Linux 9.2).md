@@ -883,6 +883,10 @@ Client {
 };
 ```
 
+10. 修改配置文件$HADOOP_CONF_DIR/hadoop-env.sh
+```bash
+echo 'export HADOOP_OPTS="${HADOOP_OPTS} -Djava.net.preferIPv4Stack=true"' >> $HADOOP_CONF_DIR/hadoop-env.sh
+```
 ---
 
 ## 配置ZooKeeper
