@@ -663,6 +663,7 @@ Hadoop 集群启用 Kerberos 认证。 HDFS 由 3 个 NameNode、5 个 DataNode 
 </span></span><span style=display:flex><span>       useTicketCache=false
 </span></span><span style=display:flex><span>       principal=&#34;hdfs&#34;;
 </span></span><span style=display:flex><span>};
+</span></span></code></pre></div><ol start=10><li>修改配置文件$HADOOP_CONF_DIR/hadoop-env.sh</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>echo <span style=color:#e6db74>&#39;export HADOOP_OPTS=&#34;${HADOOP_OPTS} -Djava.net.preferIPv4Stack=true&#34;&#39;</span> &gt;&gt; $HADOOP_CONF_DIR/hadoop-env.sh
 </span></span></code></pre></div><hr><h2 id=配置zookeeper>配置ZooKeeper</h2><blockquote><p>注意⚠️：下面的命令只需在主机machine1上执行。</p></blockquote><ol><li>创建配置文件$ZOOCFGDIR/zoo.cfg</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mv $ZOOCFGDIR/zoo_sample.cfg $ZOOCFGDIR/zoo.cfg
 </span></span></code></pre></div><ol start=2><li>修改配置文件$ZOOCFGDIR/zoo.cfg</li></ol><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span># The number of milliseconds of each tick
 </span></span><span style=display:flex><span>tickTime=2000
