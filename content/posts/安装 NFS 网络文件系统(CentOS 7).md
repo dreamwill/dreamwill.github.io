@@ -95,7 +95,7 @@ mount.nfs4: timeout set for Tue Jan 30 18:01:48 2024
 mount.nfs4: trying text-based options 'vers=4.1,addr=192.168.2.70,clientaddr=192.168.2.71'
 ```
 
-7. 查看挂载成功
+7. 查看是否挂载成功
 ```console
 [root@client1 ~]# mount |grep 192.168.2.70
 192.168.2.70:/home on /home type nfs4 (rw,relatime,vers=4.1,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,clientaddr=192.168.2.71,local_lock=none,addr=192.168.2.70)

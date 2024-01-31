@@ -7,8 +7,8 @@ draft: false
 
 安装目标：
 
-- [x] 安装一个 NIS 服务端实例，该实例所在主机 IP 地址为 192.168.2.50，对应主机 nis-master.example.com。
-- [x] 安装一个 NIS 客户端实例，该实例所在主机 IP 地址为 192.168.2.51，对应主机 nis-client.example.com。
+- [x] 安装一个 NIS 服务端实例，该实例所在主机的 IP 地址为 192.168.2.50，对应主机名 nis-master.example.com。
+- [x] 安装一个 NIS 客户端实例，该实例所在主机的 IP 地址为 192.168.2.51，对应主机名 nis-client.example.com。
 - [x] 使得客户端的用户、用户组、hosts 与服务端的保持同步。
 
 ---
@@ -20,6 +20,7 @@ draft: false
 ---
 
 ## 安装服务端
+> 注意⚠️：下面的命令是在主机 nis-master.example.com 上执行的。
 
 1. 安装
 
@@ -212,7 +213,7 @@ passwd yarn
 passwd mapred
 ```
 
-10. 更新NIS数据库
+10. 更新NIS数据库。每次增删改用户、用户组或 hosts 后都需要执行这一步，使修改生效。
 ```bash
 cd /var/yp;make
 ```
@@ -230,6 +231,7 @@ gmake[1]: 离开目录“/var/yp/nis-example-domain”
 ---
 
 ## 安装客户端
+> 注意⚠️：下面的命令是在主机 nis-client.example.com 上执行的。
 
 1. 安装
 ```bash
@@ -600,6 +602,7 @@ systemctl restart rpcbind ypbind
 systemctl enable rpcbind ypbind
 ```
 ## 测试用户、用户组、hosts同步情况
+> 注意⚠️：下面的命令是在主机 nis-client.example.com 上执行的。
 
 1. 在主机nis-client.example.com上查看用户和用户组是否存在，如果存在说明已经同步
 ```bash

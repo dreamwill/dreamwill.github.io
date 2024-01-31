@@ -7,8 +7,8 @@ draft: false
 
 安装目标：
 
-- [x] 安装一个FreeIPA服务端实例，该实例所在主机 IP 地址为 192.168.2.60，对应主机 ipa-server.xuwangwei.test。
-- [x] 安装一个FreeIPA客户端实例，该实例所在主机 IP 地址为 192.168.2.61，对应主机 machine1.xuwangwei.test。
+- [x] 安装一个FreeIPA服务端实例，该实例所在主机的 IP 地址为 192.168.2.60，对应主机名 ipa-server.xuwangwei.test。
+- [x] 安装一个FreeIPA客户端实例，该实例所在主机的 IP 地址为 192.168.2.61，对应主机名 machine1.xuwangwei.test。
 
 ---
 
@@ -19,6 +19,7 @@ draft: false
 ---
 
 ## 安装服务端
+> 注意⚠️：下面的命令是在主机 ipa-server.xuwangwei.test 上执行的。
 
 1. 设置主机名
 ```bash
@@ -381,6 +382,7 @@ firewall-cmd --add-service={freeipa-4,dns} --permanent
 ---
 
 ## 安装客户端
+> 注意⚠️：下面的命令是在主机 machine1.xuwangwei.test 上执行的。
 
 1. 设置主机名
 ```bash
@@ -400,7 +402,7 @@ hostnamectl hostname machine1.xuwangwei.test
 dnf install ipa-client
 ```
 
-4. 设置DNS
+4. 设置DNS，指向 ipa-server
 ```bash
 nmcli c modify ens160 ipv4.dns 192.168.2.60
 nmcli c up id ens160
