@@ -24,7 +24,7 @@
           </div>
         </div>
 
-        {{ if .Site.Params.disqus }}
+        {{ if and .Site.Params.disqus (not .Site.IsServer) }}
         <div class="post-comments">
           {{ partial "disqus.html" . }}
         </div>
