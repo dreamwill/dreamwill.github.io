@@ -3,6 +3,7 @@ title: 安装NIS服务（CentOS 7.9）
 date: 2023-08-26
 categories: ['安装']
 draft: false
+description: 本文描述了在CentOS操作系统上安装Network Information System(NIS)服务的步骤。
 ---
 
 安装目标：
