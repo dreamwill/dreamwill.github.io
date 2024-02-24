@@ -20,6 +20,10 @@ description: 本文描述了在CentOS操作系统上安装Network Information Sy
 
 ---
 
+> 补充说明：NIS 曾用名 Yellow Pages，简称 YP，这是它的安装包、配置和命令以 yp 开头的原因。
+
+---
+
 ## 安装服务端
 > 注意⚠️：下面的命令是在主机 nis-master.example.com 上执行的。
 
