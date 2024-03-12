@@ -3,6 +3,7 @@ title: 安装Kerberos服务（Rocky Linux 9.2）
 date: 2023-10-29
 categories: ['安装']
 draft: false
+description: 本文描述了在Rocky Linux操作系统上安装Kerberos服务的步骤，以安装一个主KDC和一个备KDC为例。最后，介绍了Kerberos服务涉及的进程krb5kdc、kadmind、kpropd的默认端口和职责。
 ---
 
 安装目标：
