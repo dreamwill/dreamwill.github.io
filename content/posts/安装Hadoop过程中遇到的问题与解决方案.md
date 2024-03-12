@@ -3,6 +3,7 @@ title: 安装 Hadoop 过程中遇到的问题与解决方案
 date: 2023-12-10
 categories: ['安装']
 draft: false
+description: "本文描述了我在安装Hadoop过程中遇到的几个问题和对应的解决方案。问题一，Shell execution returned exit code: 127. error while loading shared libraries: libcrypto.so.1.1: cannot open shared object file: No such file or directory。问题二，Can't get configured value for yarn.nodemanager.linux-container-executor.group。问题三，(GSS initiate failed) with true cause: (GSS initiate failed)"
 ---
 
 ## 问题一：启动 NodeManager 时报找不到 libcrypto.so.1.1 文件。
@@ -16,8 +17,8 @@ Stdout:
 Full command array for failed execution: 
 [/opt/hadoop/bin/container-executor, --checksetup]
 2023-11-25 16:28:14,061 WARN org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor: Exit code from container executor initialization is : 127
-org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.privileged.PrivilegedOperationException: ExitCodeException exitCode=127: /opt/hadoop/bin/container-executor: error w
-hile loading shared libraries: libcrypto.so.1.1: cannot open shared object file: No such file or directory
+org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.privileged.PrivilegedOperationException: ExitCodeException exitCode=127: /opt/hadoop/bin/container-executor: 
+error while loading shared libraries: libcrypto.so.1.1: cannot open shared object file: No such file or directory
 ```
 原因：container-executor 依赖 openssl 1.1 版本的库。
 
