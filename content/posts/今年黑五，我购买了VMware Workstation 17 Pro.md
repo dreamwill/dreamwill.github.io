@@ -3,6 +3,7 @@ title: 今年黑五，我购买了 VMware Workstation 17 Pro
 date: 2024-01-15
 categories: ['好物分享']
 draft: false
+description: 本文描述了VMware Workstation和VMware Fusion的区别、Player和Pro的区别及价格，介绍了如何在官方商店购买VMware Workstation Pro和VMware Fusion Pro，最重要的是介绍了如何享受优惠，比如在黑五7折购买。如果曾经买过Parallels Desktop，那么可以享受6折优惠。最后，介绍了如何申请免费的VMware Fusion Player。
 ---
 
 每年的黑色星期五都是购买 VMware Workstation 和 VMware Fusion 的好时机。我在等待了大半年时间后，在今年（农历）的黑五购买了 VMware Workstation 17 Pro。
