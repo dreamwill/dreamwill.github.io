@@ -1,5 +1,5 @@
 ---
-title: "我的计算机网络学习过程"
+title: "好想全世界都知道我看完了《TCP/IP Illustrated, Volume 1》"
 date: 2024-03-13
 categories: ['好物分享']
 draft: false
