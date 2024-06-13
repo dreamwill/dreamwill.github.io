@@ -6,6 +6,8 @@ draft: false
 description: 本文描述了VMware Workstation和VMware Fusion的区别、Player和Pro的区别及价格，介绍了如何在官方商店购买VMware Workstation Pro和VMware Fusion Pro，最重要的是介绍了如何享受优惠，比如在黑五7折购买。如果曾经买过Parallels Desktop，那么可以享受6折优惠。最后，介绍了如何申请免费的VMware Fusion Player。
 ---
 
+# 重磅消息：2024 年 5 月 13 号起，VMware Workstation Pro 和 VMware Fusion Pro 对个人用户完全免费，想了解如何下载可以查看我的另一篇[blog](../vmware-workstation-pro和vmware-fusion-pro对个人用户完全免费/)
+
 每年的黑色星期五都是购买 VMware Workstation 和 VMware Fusion 的好时机。我在等待了大半年时间后，在今年（农历）的黑五购买了 VMware Workstation 17 Pro。
 
 在这篇文章里，我会和大家分享如何购买 VMware Workstation 和 VMware Fusion、什么时候买更优惠以及如何申请免费的 VMware Fusion Player。
