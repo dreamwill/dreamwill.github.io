@@ -19,7 +19,7 @@ description: 本文描述了在CentOS 7.9操作系统上安装MySQL 5.7.44，同
 ---
 
 ## 通过官方 rpm 包安装
-> 重要：5.7.44 版本是 5.7 系列的最后一个版本，不会再更新了。详见官方文档说明[https://dev.mysql.com/doc/relnotes/mysql/5.7/en/news-5-7-44.html](https://dev.mysql.com/doc/relnotes/mysql/5.7/en/news-5-7-44.html)
+> 重要：5.7.44 版本是 5.7 系列的最后一个版本，不会再更新了，详见[官方文档](https://dev.mysql.com/doc/relnotes/mysql/5.7/en/news-5-7-44.html)。
 
 1. 打开 MySQL 官方下载地址[https://downloads.mysql.com/archives/community/](https://downloads.mysql.com/archives/community/)
 
