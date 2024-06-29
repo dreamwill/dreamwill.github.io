@@ -3,12 +3,13 @@ title: "安装 MySQL 5.7(CentOS 7)"
 date: 2024-06-14
 categories: ['安装']
 draft: false
-description: 本文描述了在CentOS 7.9操作系统上安装MySQL 5.7.44，同样适用于CentOS 7系列的其他版本，也适用于Red Hat Enterprise Linux 7以及Oracle 7。
+description: 本文描述了在CentOS 7.9操作系统上安装MySQL 5.7.44，同样适用于CentOS 7系列的其他版本，也适用于Red Hat Enterprise Linux 7以及Oracle 7。本文介绍了两种安装方法，一种是使用官方提供的rpm包进行安装，另一种是使用源代码编译安装。
 ---
 
 安装目标：
 
 - [x] 安装一个 MySQL 服务端实例，版本是 5.7.44。
+- [x] 两种安装方法，一种是使用官方提供的 rpm 包进行安装，另一种是使用源代码编译安装。
 
 ---
 
@@ -223,3 +224,187 @@ mysql> GRANT ALL ON *.* TO 'example'@'%';
 ```text
 mysql> exit
 ```
+
+---
+
+## 编译安装
+
+1. 安装依赖
+```bash
+yum install cmake make gcc-c++ openssl openssl-devel ncurses ncurses-devel perl -y
+```
+
+2. 安装依赖 boost
+
+浏览器打开[https://sourceforge.net/projects/boost/files/boost/1.59.0/](https://sourceforge.net/projects/boost/files/boost/1.59.0/)，下载 boost 1.59.0 版本。
+![3.png](/images/install_mysql57/3.png)
+将下载的 boost_1_59_0.tar.gz 放到 CentOS 7 服务器的/usr/local 目录下，解压，删除压缩包。
+```bash
+tar -zxf /usr/local/boost_1_59_0.tar.gz -C /usr/local
+rm -f /usr/local/boost_1_59_0.tar.gz
+```
+
+3. 下载 MySQL 源代码
+
+打开 [MySQL官方下载地址](https://downloads.mysql.com/archives/community/)，Product Version 选择 5.7.44，Operating System 选择 Source Code，OS Version 选择 All Operating Systems (Generic) (Architecture Independent)。点击 Compressed TAR Archive 一栏的 Download 按钮，开始下载。
+![4.png](/images/install_mysql57/4.png)
+
+4. 解压
+
+MySQL 源代码压缩包放到/usr/local/src 目录下，解压到同级目录，删除压缩包。
+```bash
+tar -zxf /usr/local/src/mysql-5.7.44.tar.gz -C /usr/local/src
+rm -f /usr/local/src/mysql-5.7.44.tar.gz
+cd /usr/local/src/mysql-5.7.44/
+```
+
+5. 编译并安装到/usr/local/mysql 目录下
+```bash
+mkdir bld
+cd bld
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DWITH_INNODB_MEMCACHED=1 -DWITH_BOOST=/usr/local/boost_1_59_0 
+make
+make install
+```
+
+6. 创建用户 mysql 和用户组 mysql
+```bash
+groupadd mysql
+useradd -r -g mysql -s /bin/false mysql
+```
+
+7. 修改目录的属主和属组
+```bash
+chown -R mysql:mysql /usr/local/mysql
+```
+
+8. 将/usr/local/mysql/bin 下的可执行文件（包含服务端和客户端及工具）加入环境变量
+```bash
+echo 'export MYSQL_HOME=/usr/local/mysql' > /etc/profile.d/mysql.sh
+echo 'export PATH=$PATH:$MYSQL_HOME/bin' >> /etc/profile.d/mysql.sh
+source /etc/profile.d/mysql.sh
+```
+
+9. 验证上一步操作是否成功
+```console
+[root@localhost bld]# mysql -V
+mysql  Ver 14.14 Distrib 5.7.44, for Linux (x86_64) using  EditLine wrapper
+```
+
+10. 创建数据目录和存放 pid 的目录，并且修改属主属组
+```bash
+mkdir /var/run/mysqld /var/lib/mysql
+chown mysql:mysql /var/run/mysqld /var/lib/mysql
+```
+
+11. 创建错误日志输出文件，并且修改属主属组
+```bash
+touch /var/log/mysqld.log
+chown mysql:mysql /var/log/mysqld.log
+```
+
+12. 创建配置文件/etc/my.cnf
+```ini
+# For advice on how to change settings please see
+# http://dev.mysql.com/doc/refman/5.7/en/server-configuration-defaults.html
+
+[mysqld]
+#
+# Remove leading # and set to the amount of RAM for the most important data
+# cache in MySQL. Start at 70% of total RAM for dedicated server, else 10%.
+innodb_buffer_pool_size =256M
+innodb_buffer_pool_instances=1
+innodb_log_file_size=256M
+innodb_lru_scan_depth=128
+innodb_io_capacity=10000
+innodb_io_capacity_max=16000
+innodb_status_output_locks=on
+innodb_print_all_deadlocks=on
+innodb_undo_tablespaces=10
+
+character_set_server=utf8
+#
+# Remove leading # to turn on a very important data integrity option: logging
+# changes to the binary log between backups.
+log-bin=master-bin
+server_id=1
+#
+# Remove leading # to set options mainly useful for reporting servers.
+# The server defaults are faster for transactions and fast SELECTs.
+# Adjust sizes as needed, experiment to find the optimal values.
+join_buffer_size = 128M
+sort_buffer_size = 8M
+# read_rnd_buffer_size = 2M
+basedir=/usr/local/mysql
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links=0
+
+log-error=/var/log/mysqld.log
+log_timestamps=SYSTEM
+pid-file=/var/run/mysqld/mysqld.pid
+
+log_output=TABLE
+slow_query_log=ON
+long_query_time=2
+tls_version=TLSv1.2
+
+sql_mode='STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'
+
+[client]
+socket=/var/lib/mysql/mysql.sock
+```
+
+13. 初始化数据目录
+```bash
+mysqld --initialize-insecure --user=mysql
+```
+
+14. 复制$MYSQL_HOME/support-files/mysql.server 到/etc/init.d/mysqld，这是官方提供的启动、停止脚本，我们把它放在/etc/init.d 目录下，就可以使用 service 命令启动、停止 MySQL 服务器。
+```bash
+cp $MYSQL_HOME/support-files/mysql.server /etc/init.d/mysqld
+```
+
+15. 赋予/etc/init.d/mysqld 可执行权限
+```bash
+chmod +x /etc/init.d/mysqld
+```
+
+16. 设置开机自启动 MySQL 服务器
+```bash
+chkconfig --add mysqld
+```
+
+17. 启动 MySQL 服务器
+```console
+[root@localhost bld]# service mysqld start
+Starting MySQL. SUCCESS!
+```
+
+18. 直接登录，当前'root'@'localhost'用户无密码，因为在第 15 步的时候使用--initialize-insecure 参数。
+```bash
+mysql -uroot -p
+```
+
+19. 因为超级用户'root'@'localhost'还没有密码，所以登录后第一件事就是设置超级用户'root'@'localhost'的正式密码
+```bash
+mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass4!';
+```
+
+20. 创建用户'example'@'%'且设置密码，密码永不过期
+```bash
+mysql> CREATE USER 'example'@'%' IDENTIFIED BY 'MyNewPass4!' PASSWORD EXPIRE NEVER;
+```
+
+21. 赋予用户'example'@'%'全部权限
+```bash
+mysql> GRANT ALL ON *.* TO 'example'@'%';
+```
+
+22. 退出客户端
+```bash
+mysql> exit
+```
+
