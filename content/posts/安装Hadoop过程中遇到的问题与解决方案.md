@@ -38,7 +38,10 @@ ln -s /usr/local/lib64/libcrypto.so.1.1 /usr/lib64/libcrypto.so.1.1
 ln -s /usr/local/lib64/libssl.so.1.1 /usr/lib64/libssl.so.1.1
 ```
 ## 问题二：启动 NodeManager 时报获取不到配置 yarn.nodemanager.linux-container-executor.group。
-原始报错日志：Can't get configured value for yarn.nodemanager.linux-container-executor.group.
+原始报错日志：
+```text
+Can't get configured value for yarn.nodemanager.linux-container-executor.group.
+```
 
 解决方案：
 
