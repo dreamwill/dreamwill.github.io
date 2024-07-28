@@ -1,8 +1,8 @@
 baseURL: https://dreamwill.github.io/
-languageCode: en-us
+languageCode: zh-CN
 title: 王伟的个人博客
 theme: yinyang
-DefaultContentLanguage: cn
+# DefaultContentLanguage: cn
 
 author:
   name: 许王伟
