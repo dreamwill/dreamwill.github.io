@@ -15,6 +15,8 @@ params:
   Description: "我老婆说我是一个执着的人"
   favicon: "/images/favicon.ico"
   disqus: xuwangwei
+  extraCSSFiles: 
+    - "/css/copy-to-clipboard.css"
 
 services:
   googleAnalytics:
