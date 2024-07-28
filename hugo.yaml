@@ -17,6 +17,7 @@ params:
   disqus: xuwangwei
   extraCSSFiles: 
     - "/css/copy-to-clipboard.css"
+    - "/css/code-block.css"
 
 services:
   googleAnalytics:
