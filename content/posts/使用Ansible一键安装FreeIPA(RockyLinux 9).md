@@ -167,7 +167,7 @@ ipaadmin_password=xuwangwei3306
 ansible-playbook -i inventory deploy_freeipa.yml
 ```
 
-下面是输出，可以展开查看详情：
+下面是输出：
 
 ```plain
 
