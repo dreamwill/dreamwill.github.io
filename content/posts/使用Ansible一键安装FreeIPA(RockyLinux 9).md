@@ -19,7 +19,6 @@ draft: false
 
 ---
 
-## 安装服务端
 1. 安装 Ansible
 
 ```bash
@@ -33,7 +32,7 @@ ansible-galaxy collection install freeipa.ansible_freeipa:1.14.1
 ansible-galaxy collection install ansible.posix:1.6.1
 ```
 
-3. 创建目录，存放 inventory 和 playbook
+3. 创建目录 `deploy_freeipa_using_ansible`，作为后续的工作目录
 
 ```bash
 mkdir deploy_freeipa_using_ansible && cd deploy_freeipa_using_ansible
@@ -47,35 +46,43 @@ mkdir deploy_freeipa_using_ansible && cd deploy_freeipa_using_ansible
 [ipaserver]
 ipa-server.xuwangwei.test ansible_host=192.168.2.60
 
-[ipaserver:vars]
-ipadm_password=xuwangwei3306
-ipaadmin_password=xuwangwei3306
-ipaserver_ip_addresses=192.168.2.60
-ipaserver_domain=xuwangwei.test
-ipaserver_realm=XUWANGWEI.TEST
-ipaserver_hostname=ipa-server.xuwangwei.test
-ipaserver_no_host_dns=yes
-ipaserver_setup_dns=yes
-ipaserver_reverse_zones=2.168.192.in-addr.arpa
-ipaserver_auto_reverse=yes
-ipaserver_auto_forwarders=yes
-ipaserver_setup_firewalld=yes
-ipaserver_firewalld_zone=public
-
 [ipaclients]
 machine1.xuwangwei.test ansible_host=192.168.2.61
 machine2.xuwangwei.test ansible_host=192.168.2.62
-
-[ipaclients:vars]
-ipaclient_domain=xuwangwei.test
-ipaclient_mkhomedir=yes
-ipaclient_ntp_servers=192.168.2.60
-ipaclient_configure_dns_resolver=yes
-ipaclient_dns_servers=192.168.2.60
-ipaadmin_password=xuwangwei3306
 ```
 
-5. 创建 deploy_freeipa.yml
+5. 创建目录 group_vars，在 group_vars 目录下创建两个文件，分别存放 ipaserver 和 ipaclients 的变量
+
+`group_vars/ipaserver.yml` 内容：
+
+```yaml
+ipadm_password: xuwangwei3306
+ipaadmin_password: xuwangwei3306
+ipaserver_ip_addresses: 192.168.2.60
+ipaserver_domain: xuwangwei.test
+ipaserver_realm: XUWANGWEI.TEST
+ipaserver_hostname: ipa-server.xuwangwei.test
+ipaserver_no_host_dns: yes
+ipaserver_setup_dns: yes
+ipaserver_reverse_zones: 2.168.192.in-addr.arpa
+ipaserver_auto_reverse: yes
+ipaserver_auto_forwarders: yes
+ipaserver_setup_firewalld: yes
+ipaserver_firewalld_zone: public
+```
+
+`group_vars/ipaclients.yml` 内容：
+
+```yaml
+ipaclient_domain: xuwangwei.test
+ipaclient_mkhomedir: yes
+ipaclient_ntp_servers: 192.168.2.60
+ipaclient_configure_dns_resolver: yes
+ipaclient_dns_servers: 192.168.2.60
+ipaadmin_password: xuwangwei3306
+```
+
+6. 创建 deploy_freeipa.yml
 
 文件内容：
 
@@ -103,7 +110,7 @@ ipaadmin_password=xuwangwei3306
   post_tasks:
     - name: Ensure allow_sync_ptr is yes
       freeipa.ansible_freeipa.ipadnsconfig:
-        ipaadmin_password: xuwangwei3306
+        ipaadmin_password: "{{ ipaadmin_password }}"
         allow_sync_ptr: yes
 
     - name: Add FreeIPA service to firewalld (temporary and permanent)
@@ -161,7 +168,18 @@ ipaadmin_password=xuwangwei3306
 
 ```
 
-6. 一键安装
+最终的目录结构如下所示：
+
+```plain
+deploy_freeipa_using_ansible/
+├── inventory
+├── group_vars/
+│   ├── ipaserver.yml
+│   └── ipaclients.yml
+└── deploy_freeipa.yml
+```
+
+7. 一键安装
 
 ```bash
 ansible-playbook -i inventory deploy_freeipa.yml
