@@ -160,8 +160,8 @@ server_id=1
 # Remove leading # to set options mainly useful for reporting servers.
 # The server defaults are faster for transactions and fast SELECTs.
 # Adjust sizes as needed, experiment to find the optimal values.
-join_buffer_size = 128M
-sort_buffer_size = 8M
+join_buffer_size = 2M
+sort_buffer_size = 2M
 # read_rnd_buffer_size = 2M
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
@@ -332,8 +332,8 @@ server_id=1
 # Remove leading # to set options mainly useful for reporting servers.
 # The server defaults are faster for transactions and fast SELECTs.
 # Adjust sizes as needed, experiment to find the optimal values.
-join_buffer_size = 128M
-sort_buffer_size = 8M
+join_buffer_size = 2M
+sort_buffer_size = 2M
 # read_rnd_buffer_size = 2M
 basedir=/usr/local/mysql
 datadir=/var/lib/mysql
