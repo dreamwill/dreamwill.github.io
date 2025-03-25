@@ -8,13 +8,6 @@ theme:
   font: false
 
   palette:
-    # Dark Mode
-    - scheme: slate
-      toggle:
-        icon: material/weather-sunny
-        name: Dark mode
-      primary: blue
-      accent: blue
     # Light Mode
     - scheme: default
       toggle:
@@ -22,6 +15,13 @@ theme:
         name: Light mode
       primary: green
       accent: green
+    # Dark Mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Dark mode
+      primary: blue
+      accent: blue
 
   features:
     - content.code.copy
