@@ -299,6 +299,6 @@ draft: false
   您的浏览器不支持视频标签。
 </video>
 
-看，是不是非常简单:smile:。我们启动调试后，程序会在入口函数 main 处停下，等待我们的指令。你可以单击 F7 进入 main 函数，然后使用 F8 一步一步往下走。如果你不希望每次启动调试时，程序都停在 main 函数处，那么可以修改 `.vscode/launch.json` 中的 stopAtEntry 属性为 false。
+看，是不是非常简单:smile:。我们启动调试后，程序会在入口函数 main 处停下，等待我们的指令。你可以单击 ++f7++ 进入 main 函数，然后使用 ++f8++ 一步一步往下走。如果你不希望每次启动调试时，程序都停在 main 函数处，那么可以修改 `.vscode/launch.json` 中的 stopAtEntry 属性为 false。
 
 下一篇，我们开始正式阅读 MySQL 源码。
