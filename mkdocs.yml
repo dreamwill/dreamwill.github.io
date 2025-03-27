@@ -58,6 +58,7 @@ plugins:
 
 markdown_extensions:
   - pymdownx.keys
+  - pymdownx.tilde
   - abbr
   - attr_list
   - md_in_html
