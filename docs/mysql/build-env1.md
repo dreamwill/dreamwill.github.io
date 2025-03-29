@@ -1,7 +1,4 @@
 ---
-tags:
-  - MySQL
-  - Rocky Linux 9
 date: 
   created: 2025-03-21
   updated: 2025-03-22
@@ -82,7 +79,7 @@ draft: false
 
 将下面的脚本内容直接复制粘贴
 
-```yml title="build_mysql.yml"
+```yaml title="build_mysql.yml"
 ---
 - name: Build MySQL debug environment
   hosts: localhost
