@@ -121,7 +121,8 @@ root@debian:~# vi build_mysql.yml
         login_user: root
         login_password: "{{ mysql_root_password }}"
         name: example
-        password: "{{ mysql_root_password }}"
+        plugin: caching_sha2_password
+        plugin_auth_string: "{{ mysql_root_password }}"
         host: "%"
         priv: "*.*:ALL"
 

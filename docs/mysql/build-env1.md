@@ -138,10 +138,9 @@ draft: false
 
     - name: Set root password
       community.mysql.mysql_user:
-        login_user: root
-        login_password: ""
         name: root
-        password: "{{ mysql_root_password }}"
+        plugin: caching_sha2_password
+        plugin_auth_string: "{{ mysql_root_password }}"
         password_expire: never
 
     - name: Create user 'example'@'%'
@@ -149,7 +148,8 @@ draft: false
         login_user: root
         login_password: "{{ mysql_root_password }}"
         name: example
-        password: "{{ mysql_root_password }}"
+        plugin: caching_sha2_password
+        plugin_auth_string: "{{ mysql_root_password }}"
         host: "%"
         priv: "*.*:ALL"
 
