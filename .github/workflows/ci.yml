@@ -22,4 +22,8 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install mkdocs-material mkdocs-redirects
-      - run: mkdocs gh-deploy --force
+
+      - name: Build
+        env:
+          GOOGLE_ANALYTICS_KEY: ${{ secrets.GOOGLE_ANALYTICS_KEY }}
+        run: mkdocs gh-deploy --force
