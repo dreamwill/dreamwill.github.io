@@ -1,0 +1,1192 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="我老婆说我是一个执着的人">
+      
+      
+        <meta name="author" content="许王伟">
+      
+      
+        <link rel="canonical" href="https://xuwangwei.com/mysql/connect1/">
+      
+      
+        <link rel="prev" href="../build-env2/">
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+    
+    
+      
+        <title>当客户端输入 mysql -h x.x.x.x -u root -p 时，服务端在做什么（上） - 许王伟的个人网站</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.4af4bdda.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+<script id="__analytics">function __md_analytics(){function e(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],e("js",new Date),e("config","G-58Y5WB8P5M"),document.addEventListener("DOMContentLoaded",(function(){document.forms.search&&document.forms.search.query.addEventListener("blur",(function(){this.value&&e("event","search",{search_term:this.value})}));document$.subscribe((function(){var t=document.forms.feedback;if(void 0!==t)for(var a of t.querySelectorAll("[type=submit]"))a.addEventListener("click",(function(a){a.preventDefault();var n=document.location.pathname,d=this.getAttribute("data-md-value");e("event","feedback",{page:n,data:d}),t.firstElementChild.disabled=!0;var r=t.querySelector(".md-feedback__note [data-md-value='"+d+"']");r&&(r.hidden=!1)})),t.hidden=!1})),location$.subscribe((function(t){e("config","G-58Y5WB8P5M",{page_path:t.pathname})}))}));var t=document.createElement("script");t.async=!0,t.src="https://www.googletagmanager.com/gtag/js?id=G-58Y5WB8P5M",document.getElementById("__analytics").insertAdjacentElement("afterEnd",t)}</script>
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#mysql-h-xxxx-u-root-p" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="许王伟的个人网站" class="md-header__button md-logo" aria-label="许王伟的个人网站" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            许王伟的个人网站
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              当客户端输入 mysql -h x.x.x.x -u root -p 时，服务端在做什么（上）
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="green" data-md-color-accent="green"  aria-label="Light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../blog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  博客
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../build-env1/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  漫游 MySQL 源码系列
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="许王伟的个人网站" class="md-nav__button md-logo" aria-label="许王伟的个人网站" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    许王伟的个人网站
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../blog/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    博客
+    
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1" id="__nav_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            博客
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_2" id="__nav_1_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    归档
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            归档
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../blog/archive/2025/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    2025
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../blog/archive/2024/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    2024
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../blog/archive/2023/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    2023
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_3" id="__nav_1_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    分类
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_3">
+            <span class="md-nav__icon md-icon"></span>
+            分类
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../blog/category/%E5%85%B6%E4%BB%96/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    其他
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../blog/category/%E5%A5%BD%E7%89%A9%E5%88%86%E4%BA%AB/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    好物分享
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+  
+  
+    <li class="md-nav__item">
+      <a href="../../blog/category/%E5%AE%89%E8%A3%85/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    安装
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    漫游 MySQL 源码系列
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            漫游 MySQL 源码系列
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    搭建 MySQL 源码阅读和调试环境
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            搭建 MySQL 源码阅读和调试环境
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build-env1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Rocky Linux 9
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build-env2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Debian 12
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    当客户端输入 mysql -h x.x.x.x -u root -p 时，服务端在做什么（上）
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    当客户端输入 mysql -h x.x.x.x -u root -p 时，服务端在做什么（上）
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      等待客户端连接
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      处理连接
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      小结
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      等待客户端连接
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      处理连接
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      小结
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="mysql-h-xxxx-u-root-p">当客户端输入 mysql -h x.x.x.x -u root -p 时，服务端在做什么（上）<a class="headerlink" href="#mysql-h-xxxx-u-root-p" title="Permanent link">&para;</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Conventions</p>
+<ul class="task-list">
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 每一个代码块的顶部都有它所属的文件（相对）路径，如果代码块属于某个函数（方法），那么顶部会有函数（方法）的声明。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 代码块中的对象，如果很重要，会在行尾补充该对象的声明。</li>
+<li class="task-list-item"><label class="task-list-control"><input type="checkbox" disabled checked/><span class="task-list-indicator"></span></label> 我使用的MySQL 版本是 8.0.41。你看到这篇时，可能有了更新的版本，比如 8.0.42，区别不大的。</li>
+</ul>
+</div>
+<hr />
+<h2 id="_1">等待客户端连接<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>服务端在启动后监听 3306 端口，并且一直等待客户端连接。对应到源代码是什么样子的？</p>
+<div class="language-cpp highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">sql/main.cc</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-24">24</a></span>
+<span class="normal"><a href="#__codelineno-0-25">25</a></span>
+<span class="normal"><a href="#__codelineno-0-26">26</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span class="k">extern</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">mysqld_main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">);</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">mysqld_main</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+</span></code></pre></div></td></tr></table></div>
+<p>首先，main 函数直接调用 mysqld_main 函数，够简单吧，那就去看看 mysqld_main 函数。</p>
+<p><div class="language-cpp highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">sql/mysqld.cc int mysqld_main(int argc, char **argv)</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-1-8286">8286</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-1-8286"><a id="__codelineno-1-8286" name="__codelineno-1-8286"></a><span class="w">  </span><span class="n">mysqld_socket_acceptor</span><span class="o">-&gt;</span><span class="n">connection_event_loop</span><span class="p">();</span><span class="w"> </span><span class="c1">// (1)!</span>
+</span></code></pre></div></td></tr></table></div>
+mysqld_main 函数太复杂了，别怕，大部分我们都不关心，我们只抓主要矛盾。直接看 8286 行，mysqld_socket_acceptor 调用 connection_event_loop 函数负责等待客户端的连接事件。</p>
+<ol>
+<li>static Connection_acceptor<Mysqld_socket_listener> *mysqld_socket_acceptor</li>
+</ol>
+<div class="language-cpp highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">sql/conn_handler/connection_acceptor.h</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-2-58">58</a></span>
+<span class="normal"><a href="#__codelineno-2-59">59</a></span>
+<span class="normal"><a href="#__codelineno-2-60">60</a></span>
+<span class="normal"><a href="#__codelineno-2-61">61</a></span>
+<span class="normal"><a href="#__codelineno-2-62">62</a></span>
+<span class="normal"><a href="#__codelineno-2-63">63</a></span>
+<span class="normal"><a href="#__codelineno-2-64">64</a></span>
+<span class="normal"><a href="#__codelineno-2-65">65</a></span>
+<span class="normal"><a href="#__codelineno-2-66">66</a></span>
+<span class="normal"><a href="#__codelineno-2-67">67</a></span>
+<span class="normal"><a href="#__codelineno-2-68">68</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-2-58"><a id="__codelineno-2-58" name="__codelineno-2-58"></a><span class="w">  </span><span class="cm">/**</span>
+</span><span id="__span-2-59"><a id="__codelineno-2-59" name="__codelineno-2-59"></a><span class="cm">    Connection acceptor loop to accept connections from clients.</span>
+</span><span id="__span-2-60"><a id="__codelineno-2-60" name="__codelineno-2-60"></a><span class="cm">  */</span>
+</span><span id="__span-2-61"><a id="__codelineno-2-61" name="__codelineno-2-61"></a><span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">connection_event_loop</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-62"><a id="__codelineno-2-62" name="__codelineno-2-62"></a><span class="w">    </span><span class="n">Connection_handler_manager</span><span class="w"> </span><span class="o">*</span><span class="n">mgr</span><span class="w"> </span><span class="o">=</span>
+</span><span id="__span-2-63"><a id="__codelineno-2-63" name="__codelineno-2-63"></a><span class="w">        </span><span class="n">Connection_handler_manager</span><span class="o">::</span><span class="n">get_instance</span><span class="p">();</span>
+</span><span id="__span-2-64"><a id="__codelineno-2-64" name="__codelineno-2-64"></a><span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">connection_events_loop_aborted</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-65"><a id="__codelineno-2-65" name="__codelineno-2-65"></a><span class="hll"><span class="w">      </span><span class="n">Channel_info</span><span class="w"> </span><span class="o">*</span><span class="n">channel_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m_listener</span><span class="o">-&gt;</span><span class="n">listen_for_connection_event</span><span class="p">();</span><span class="w"> </span><span class="c1">// (1)!</span>
+</span></span><span id="__span-2-66"><a id="__codelineno-2-66" name="__codelineno-2-66"></a><span class="hll"><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">channel_info</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="n">mgr</span><span class="o">-&gt;</span><span class="n">process_new_connection</span><span class="p">(</span><span class="n">channel_info</span><span class="p">);</span>
+</span></span><span id="__span-2-67"><a id="__codelineno-2-67" name="__codelineno-2-67"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-2-68"><a id="__codelineno-2-68" name="__codelineno-2-68"></a><span class="w">  </span><span class="p">}</span>
+</span></code></pre></div></td></tr></table></div>
+<ol>
+<li>Mysqld_socket_listener *m_listener</li>
+</ol>
+<p>connection_event_loop() 函数没几行，从第 65 行看出，mysqld_socket_acceptor 的成员 m_listener 才是真正干活的———等待连接事件。第 66 行将（封装好的）连接对象 channel_info 交给 mgr 对象，mgr 对象调用 process_new_connection() 函数处理连接，就像它的名字 Connection_handler_manager 所说的，它是连接句柄的管理者。</p>
+<div class="language-cpp highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">sql/conn_handler/socket_connection.cc</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-3-1348">1348</a></span>
+<span class="normal"><a href="#__codelineno-3-1349">1349</a></span>
+<span class="normal"><a href="#__codelineno-3-1350">1350</a></span>
+<span class="normal"><a href="#__codelineno-3-1351">1351</a></span>
+<span class="normal"><a href="#__codelineno-3-1352">1352</a></span>
+<span class="normal"><a href="#__codelineno-3-1353">1353</a></span>
+<span class="normal"><a href="#__codelineno-3-1354">1354</a></span>
+<span class="normal"><a href="#__codelineno-3-1355">1355</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-3-1348"><a id="__codelineno-3-1348" name="__codelineno-3-1348"></a><span class="n">Channel_info</span><span class="w"> </span><span class="o">*</span><span class="nf">Mysqld_socket_listener::listen_for_connection_event</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-1349"><a id="__codelineno-3-1349" name="__codelineno-3-1349"></a><span class="cp">#ifdef HAVE_POLL</span>
+</span><span id="__span-3-1350"><a id="__codelineno-3-1350" name="__codelineno-3-1350"></a><span class="hll"><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">poll</span><span class="p">(</span><span class="o">&amp;</span><span class="n">m_poll_info</span><span class="p">.</span><span class="n">m_fds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">m_socket_vector</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="mi">-1</span><span class="p">);</span>
+</span></span><span id="__span-3-1351"><a id="__codelineno-3-1351" name="__codelineno-3-1351"></a><span class="cp">#else</span>
+</span><span id="__span-3-1352"><a id="__codelineno-3-1352" name="__codelineno-3-1352"></a><span class="w">  </span><span class="n">m_select_info</span><span class="p">.</span><span class="n">m_read_fds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">m_select_info</span><span class="p">.</span><span class="n">m_client_fds</span><span class="p">;</span>
+</span><span id="__span-3-1353"><a id="__codelineno-3-1353" name="__codelineno-3-1353"></a><span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">retval</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">select</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">m_select_info</span><span class="p">.</span><span class="n">m_max_used_connection</span><span class="p">,</span>
+</span><span id="__span-3-1354"><a id="__codelineno-3-1354" name="__codelineno-3-1354"></a><span class="w">                      </span><span class="o">&amp;</span><span class="n">m_select_info</span><span class="p">.</span><span class="n">m_read_fds</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+</span><span id="__span-3-1355"><a id="__codelineno-3-1355" name="__codelineno-3-1355"></a><span class="cp">#endif</span>
+</span></code></pre></div></td></tr></table></div>
+<p>苦力 m_listener 使用 POLL 系统调用，监听 POLLIN 事件。</p>
+<div class="language-cpp highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">sql/conn_handler/socket_connection.cc Channel_info *listen_for_connection_event()</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-4-1419">1419</a></span>
+<span class="normal"><a href="#__codelineno-4-1420">1420</a></span>
+<span class="normal"><a href="#__codelineno-4-1421">1421</a></span>
+<span class="normal"><a href="#__codelineno-4-1422">1422</a></span>
+<span class="normal"><a href="#__codelineno-4-1423">1423</a></span>
+<span class="normal"><a href="#__codelineno-4-1424">1424</a></span>
+<span class="normal"><a href="#__codelineno-4-1425">1425</a></span>
+<span class="normal"><a href="#__codelineno-4-1426">1426</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-4-1419"><a id="__codelineno-4-1419" name="__codelineno-4-1419"></a><span class="w">  </span><span class="n">Channel_info</span><span class="w"> </span><span class="o">*</span><span class="n">channel_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+</span><span id="__span-4-1420"><a id="__codelineno-4-1420" name="__codelineno-4-1420"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">listen_socket</span><span class="o">-&gt;</span><span class="n">m_socket_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Socket_type</span><span class="o">::</span><span class="n">UNIX_SOCKET</span><span class="p">)</span>
+</span><span id="__span-4-1421"><a id="__codelineno-4-1421" name="__codelineno-4-1421"></a><span class="w">    </span><span class="n">channel_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">nothrow</span><span class="p">)</span><span class="w"> </span><span class="n">Channel_info_local_socket</span><span class="p">(</span><span class="n">connect_sock</span><span class="p">);</span>
+</span><span id="__span-4-1422"><a id="__codelineno-4-1422" name="__codelineno-4-1422"></a><span class="w">  </span><span class="k">else</span>
+</span><span id="__span-4-1423"><a id="__codelineno-4-1423" name="__codelineno-4-1423"></a><span class="hll"><span class="w">    </span><span class="n">channel_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">nothrow</span><span class="p">)</span><span class="w"> </span><span class="n">Channel_info_tcpip_socket</span><span class="p">(</span>
+</span></span><span id="__span-4-1424"><a id="__codelineno-4-1424" name="__codelineno-4-1424"></a><span class="hll"><span class="w">        </span><span class="n">connect_sock</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">listen_socket</span><span class="o">-&gt;</span><span class="n">m_socket_interface</span><span class="w"> </span><span class="o">==</span>
+</span></span><span id="__span-4-1425"><a id="__codelineno-4-1425" name="__codelineno-4-1425"></a><span class="hll"><span class="w">                       </span><span class="n">Socket_interface_type</span><span class="o">::</span><span class="n">ADMIN_INTERFACE</span><span class="p">));</span>
+</span></span><span id="__span-4-1426"><a id="__codelineno-4-1426" name="__codelineno-4-1426"></a><span class="cp">#endif</span>
+</span></code></pre></div></td></tr></table></div>
+<p>接着，POLLIN 事件发生后，new 一个 channel_info 对象，类型 Channel_info_tcpip_socket，listen_for_connection_event 函数返回的就是这个对象。</p>
+<div class="language-cpp highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">sql/conn_handler/connection_handler_manager.cc</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-5-254">254</a></span>
+<span class="normal"><a href="#__codelineno-5-255">255</a></span>
+<span class="normal"><a href="#__codelineno-5-256">256</a></span>
+<span class="normal"><a href="#__codelineno-5-257">257</a></span>
+<span class="normal"><a href="#__codelineno-5-258">258</a></span>
+<span class="normal"><a href="#__codelineno-5-259">259</a></span>
+<span class="normal"><a href="#__codelineno-5-260">260</a></span>
+<span class="normal"><a href="#__codelineno-5-261">261</a></span>
+<span class="normal"><a href="#__codelineno-5-262">262</a></span>
+<span class="normal"><a href="#__codelineno-5-263">263</a></span>
+<span class="normal"><a href="#__codelineno-5-264">264</a></span>
+<span class="normal"><a href="#__codelineno-5-265">265</a></span>
+<span class="normal"><a href="#__codelineno-5-266">266</a></span>
+<span class="normal"><a href="#__codelineno-5-267">267</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-5-254"><a id="__codelineno-5-254" name="__codelineno-5-254"></a><span class="kt">void</span><span class="w"> </span><span class="nf">Connection_handler_manager::process_new_connection</span><span class="p">(</span>
+</span><span id="__span-5-255"><a id="__codelineno-5-255" name="__codelineno-5-255"></a><span class="w">    </span><span class="n">Channel_info</span><span class="w"> </span><span class="o">*</span><span class="n">channel_info</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-256"><a id="__codelineno-5-256" name="__codelineno-5-256"></a><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">connection_events_loop_aborted</span><span class="p">()</span><span class="w"> </span><span class="o">||</span>
+</span><span id="__span-5-257"><a id="__codelineno-5-257" name="__codelineno-5-257"></a><span class="w">      </span><span class="o">!</span><span class="n">check_and_incr_conn_count</span><span class="p">(</span><span class="n">channel_info</span><span class="o">-&gt;</span><span class="n">is_admin_connection</span><span class="p">()))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-258"><a id="__codelineno-5-258" name="__codelineno-5-258"></a><span class="w">    </span><span class="n">channel_info</span><span class="o">-&gt;</span><span class="n">send_error_and_close_channel</span><span class="p">(</span><span class="n">ER_CON_COUNT_ERROR</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">);</span>
+</span><span id="__span-5-259"><a id="__codelineno-5-259" name="__codelineno-5-259"></a><span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">channel_info</span><span class="p">;</span>
+</span><span id="__span-5-260"><a id="__codelineno-5-260" name="__codelineno-5-260"></a><span class="w">    </span><span class="k">return</span><span class="p">;</span>
+</span><span id="__span-5-261"><a id="__codelineno-5-261" name="__codelineno-5-261"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-5-262"><a id="__codelineno-5-262" name="__codelineno-5-262"></a>
+</span><span id="__span-5-263"><a id="__codelineno-5-263" name="__codelineno-5-263"></a><span class="hll"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">m_connection_handler</span><span class="o">-&gt;</span><span class="n">add_connection</span><span class="p">(</span><span class="n">channel_info</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// (1)!</span>
+</span></span><span id="__span-5-264"><a id="__codelineno-5-264" name="__codelineno-5-264"></a><span class="w">    </span><span class="n">inc_aborted_connects</span><span class="p">();</span>
+</span><span id="__span-5-265"><a id="__codelineno-5-265" name="__codelineno-5-265"></a><span class="w">    </span><span class="k">delete</span><span class="w"> </span><span class="n">channel_info</span><span class="p">;</span>
+</span><span id="__span-5-266"><a id="__codelineno-5-266" name="__codelineno-5-266"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-5-267"><a id="__codelineno-5-267" name="__codelineno-5-267"></a><span class="p">}</span>
+</span></code></pre></div></td></tr></table></div>
+<ol>
+<li>Connection_handler *m_connection_handler</li>
+</ol>
+<h2 id="_2">处理连接<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>前面说到 mgr 调用 process_new_connection() 函数处理具体的连接对象 channel_info，上面就是该函数的全部代码，直接看第 263 行，它把连接对象 channel_info 交给了 m_connection_handler，m_connection_handler 是 mgr 的成员，对应类型 Connection_handler。</p>
+<div class="language-cpp highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">sql/conn_handler/connection_handler_per_thread.cc bool Per_thread_connection_handler::add_connection(Channel_info *channel_info)</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-6-407">407</a></span>
+<span class="normal"><a href="#__codelineno-6-408">408</a></span>
+<span class="normal"><a href="#__codelineno-6-409">409</a></span>
+<span class="normal"><a href="#__codelineno-6-410">410</a></span>
+<span class="normal"><a href="#__codelineno-6-411">411</a></span>
+<span class="normal"><a href="#__codelineno-6-412">412</a></span>
+<span class="normal"><a href="#__codelineno-6-413">413</a></span>
+<span class="normal"><a href="#__codelineno-6-414">414</a></span>
+<span class="normal"><a href="#__codelineno-6-415">415</a></span>
+<span class="normal"><a href="#__codelineno-6-416">416</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-6-407"><a id="__codelineno-6-407" name="__codelineno-6-407"></a><span class="hll"><span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">check_idle_thread_and_enqueue_connection</span><span class="p">(</span><span class="n">channel_info</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+</span></span><span id="__span-6-408"><a id="__codelineno-6-408" name="__codelineno-6-408"></a>
+</span><span id="__span-6-409"><a id="__codelineno-6-409" name="__codelineno-6-409"></a><span class="w">  </span><span class="cm">/*</span>
+</span><span id="__span-6-410"><a id="__codelineno-6-410" name="__codelineno-6-410"></a><span class="cm">    There are no idle threads available to take up the new</span>
+</span><span id="__span-6-411"><a id="__codelineno-6-411" name="__codelineno-6-411"></a><span class="cm">    connection. Create a new thread to handle the connection</span>
+</span><span id="__span-6-412"><a id="__codelineno-6-412" name="__codelineno-6-412"></a><span class="cm">  */</span>
+</span><span id="__span-6-413"><a id="__codelineno-6-413" name="__codelineno-6-413"></a><span class="w">  </span><span class="n">channel_info</span><span class="o">-&gt;</span><span class="n">set_prior_thr_create_utime</span><span class="p">();</span>
+</span><span id="__span-6-414"><a id="__codelineno-6-414" name="__codelineno-6-414"></a><span class="w">  </span><span class="n">error</span><span class="w"> </span><span class="o">=</span>
+</span><span id="__span-6-415"><a id="__codelineno-6-415" name="__codelineno-6-415"></a><span class="hll"><span class="w">      </span><span class="n">mysql_thread_create</span><span class="p">(</span><span class="n">key_thread_one_connection</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">connection_attrib</span><span class="p">,</span>
+</span></span><span id="__span-6-416"><a id="__codelineno-6-416" name="__codelineno-6-416"></a><span class="hll"><span class="w">                          </span><span class="n">handle_connection</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="n">channel_info</span><span class="p">);</span>
+</span></span></code></pre></div></td></tr></table></div>
+<p>add_connection 函数只需要关注上面几行代码。</p>
+<p>Connection_handler 有两个子类，一是 Per_thread_connection_handler，另一个是 One_thread_connection_handler。顾名思义，Per_thread_connection_handler 是一个连接一个线程，One_thread_connection_handler 是所有连接一个线程。我们看 Per_thread_connection_handler 就可以了，因为这是默认也是正常情况下用的，如果你一定要用 One_thread_connection_handler，那么可以修改 MySQL 配置 thread_handling=no-threads 即可。</p>
+<p>从这里我们知道了，MySQL 服务端对于每一个客户端连接，都会创建一个线程来处理。按照套路，肯定得有线程池，第 407 行的函数名 check_idle_thread_and_enqueue_connection 就在提示我们，检查有没有空闲的线程，如果有那么就把连接对象 channel_info 扔进去。</p>
+<p>我很自然地想到了线程池最大线程数的配置，于是查找<a href="https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_thread_cache_size">官方文档</a>，找到了 thread_cache_size。</p>
+<p>扯远了，我们接着看上面这个函数，由于我们是服务端启动后第一次连接，所以 check_idle_thread_and_enqueue_connection 会返回 true 表示没有空闲线程，程序会走到第 415、416 行，mysql_thread_create 函数创建线程（内部使用 pthread API），并且将 handle_connection 函数指示符作为参数，这样线程就会执行 handle_connection 函数，而 (void *)channel_info 最终会作为 handle_connection 函数的入参。</p>
+<div class="language-cpp highlight"><table class="highlighttable"><tr><th colspan="2" class="filename"><span class="filename">sql/conn_handler/connection_handler_per_thread.cc static void *handle_connection(void *arg)</span></th></tr><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-7-299">299</a></span>
+<span class="normal"><a href="#__codelineno-7-300">300</a></span>
+<span class="normal"><a href="#__codelineno-7-301">301</a></span>
+<span class="normal"><a href="#__codelineno-7-302">302</a></span>
+<span class="normal"><a href="#__codelineno-7-303">303</a></span>
+<span class="normal"><a href="#__codelineno-7-304">304</a></span>
+<span class="normal"><a href="#__codelineno-7-305">305</a></span>
+<span class="normal"><a href="#__codelineno-7-306">306</a></span></pre></div></td><td class="code"><div><pre><span></span><code><span id="__span-7-299"><a id="__codelineno-7-299" name="__codelineno-7-299"></a><span class="hll"><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">thd_prepare_connection</span><span class="p">(</span><span class="n">thd</span><span class="p">))</span>
+</span></span><span id="__span-7-300"><a id="__codelineno-7-300" name="__codelineno-7-300"></a><span class="w">      </span><span class="n">handler_manager</span><span class="o">-&gt;</span><span class="n">inc_aborted_connects</span><span class="p">();</span>
+</span><span id="__span-7-301"><a id="__codelineno-7-301" name="__codelineno-7-301"></a><span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-302"><a id="__codelineno-7-302" name="__codelineno-7-302"></a><span class="w">      </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">thd_connection_alive</span><span class="p">(</span><span class="n">thd</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-303"><a id="__codelineno-7-303" name="__codelineno-7-303"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">do_command</span><span class="p">(</span><span class="n">thd</span><span class="p">))</span><span class="w"> </span><span class="k">break</span><span class="p">;</span>
+</span><span id="__span-7-304"><a id="__codelineno-7-304" name="__codelineno-7-304"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-7-305"><a id="__codelineno-7-305" name="__codelineno-7-305"></a><span class="w">      </span><span class="n">end_connection</span><span class="p">(</span><span class="n">thd</span><span class="p">);</span>
+</span><span id="__span-7-306"><a id="__codelineno-7-306" name="__codelineno-7-306"></a><span class="w">    </span><span class="p">}</span>
+</span></code></pre></div></td></tr></table></div>
+<p>线程执行的 handle_connection 函数如上所示，我们只需要关注这么一小块就行了。第 299 行 thd_prepare_connection 会验证用户名和密码，如果正确，那么返回 false，否则返回 true。</p>
+<p>假设用户名密码正确，即 thd_prepare_connection 返回 false，程序会进入 else 分支。else 分支中是一个 while 循环，while 判断当连接存活时，调用 do_command 函数；连接不存活时，跳出循环，调用 end_connection 函数。</p>
+<p>do_command 函数会阻塞等待客户端的下一条命令。</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>MySQL 源代码中很多函数成功时返回 false，失败时返回 true，要看注释。 </p>
+</div>
+<hr />
+<h2 id="_3">小结<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>类 <code>Connection_acceptor&lt;Mysqld_socket_listener&gt;</code> 负责监听 3306 端口，与客户端建立连接。</li>
+<li>类 <code>Mysqld_socket_listener</code> 是实际与客户端建立网络（TCP/IP）连接的牛马。</li>
+<li>类 <code>Channel_info</code> 封装连接信息，子类 <code>Channel_info_tcpip_socket</code> 表示 TCP/IP 连接。</li>
+<li>类 <code>Connection_handler</code> 负责处理连接，子类 <code>Per_thread_connection_handler</code> 对于每一个客户端连接，都会新建一个线程，处理逻辑在 <code>handle_connection</code> 方法中。</li>
+</ul>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "../..", "features": ["content.code.copy", "content.code.annotate", "content.tooltips", "navigation.tabs", "navigation.indexes", "navigation.top", "toc.follow"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  </body>
+</html>
